@@ -2,10 +2,10 @@
 A macro for the Foundry virtual tabletop that duplicates the contents of a folder
 
 Foundry v12
-Version 1.0
+Version 2.0
 */
 
-const { BooleanField, DocumentUUIDField } = foundry.data.fields
+const { StringField, DocumentUUIDField } = foundry.data.fields
 const { DialogV2 } = foundry.applications.api
 
 // Define the dialog fields
@@ -17,46 +17,51 @@ const destinationField = new DocumentUUIDField({
   label: 'Destination Folder:'
 }).toFormGroup({}, { name: 'destinationUuid' }).outerHTML
 
+const prefixField = new StringField({
+  label: 'Prefix:',
+  hint: 'Leave blank for no prefix',
+  blank: true,
+  trim: false // allow leading or trailing whitespace
+}).toFormGroup({}, { name: 'prefix' }).outerHTML
+
 // run the dialog
-const data = await DialogV2.prompt({
+const theDialog = await DialogV2.prompt({
   window: { title: 'Duplicate Folder Contents' },
   position: { width: 400 },
-  content: sourceField + destinationField,
+  content: sourceField + destinationField + prefixField,
   ok: {
     callback: (event, button) => new FormDataExtended(button.form).object
   }
 })
 
-const sourceFolder = await fromUuid(data.sourceUuid)
-const destinationFolder = await fromUuid(data.destinationUuid)
+const sourceFolder = await fromUuid(theDialog.sourceUuid)
+const destinationFolder = await fromUuid(theDialog.destinationUuid)
+const namePrefix = theDialog.prefix ? theDialog.prefix : ''
 
+// Since the dialog allows dragging any document onto the DocumentUUIDFields, make sure we have folders
 if (!(sourceFolder instanceof Folder) || !(destinationFolder instanceof Folder))
   return ui.notifications.warn(
     'Wrong document type provided. Folders expected for source and destination.'
   )
 
-// This will be prefixed to their name - put to empty string if you do not want a prefix
-let namePrefix = 'New '
-
-/*
 // Only allow copying from the same types of folders (i.e. actor to actor folder, item to item folder)
-if (sourceFolder.type != destFolder.type) {
-  return ui.notifications.error(
-    `Source folder[${sourceFolder.name}] and destingation folder[${destFolder.name}] needs to be same type`
+if (sourceFolder.type != destinationFolder.type) {
+  return ui.notifications.warn(
+    `Source '${sourceFolder.name}' and destination '${destinationFolder.name}' must be the same type`
   )
 }
+
 let folderCopy = sourceFolder.contents.map(data => {
   return {
     ...data.toObject(),
     name: `${namePrefix}${data.name}`,
-    folder: destFolder.id,
+    folder: destinationFolder.id,
     ownership: {}
   }
 })
 
-// Sadly, createDocuments can't be performed directly on Document, so we need to check what type of document there is
-getDocumentClass(sourceFolder.type).createDocuments(folderCopy)
-*/
+await destinationFolder.documentClass.createDocuments(folderCopy)
+
 ui.notifications.notify(
-  `Duplicated items from '${sourceFolder.name}' to '${destinationFolder.name}'`
+  `Duplicated ${folderCopy.length} items from '${sourceFolder.name}' to '${destinationFolder.name}'`
 )
