@@ -5,12 +5,35 @@ Foundry v12
 Version 1.0
 */
 
-// Change this to the ID of the source folder you want to copy
-// Folder id can be gained by left clicking the little icon in the header of the folder
-let sourceFolder = game.folders.get('03ZNZvHcvT1k3vtn')
-// Change this to the ID of destination folder where the copies should end up in
-// Folder id can be gained by left clicking the little icon in the header of the folder
-let destFolder = game.folders.get('a22vmLZxBWzABTqw')
+const { BooleanField, DocumentUUIDField } = foundry.data.fields
+const { DialogV2 } = foundry.applications.api
+
+// Define the dialog fields
+const sourceField = new DocumentUUIDField({
+  label: 'Source Folder:'
+}).toFormGroup({}, { name: 'sourceUuid' }).outerHTML
+
+const destinationField = new DocumentUUIDField({
+  label: 'Destination Folder:'
+}).toFormGroup({}, { name: 'destinationUuid' }).outerHTML
+
+// run the dialog
+const data = await DialogV2.prompt({
+  window: { title: 'Duplicate Folder Contents' },
+  position: { width: 400 },
+  content: sourceField + destinationField,
+  ok: {
+    callback: (event, button) => new FormDataExtended(button.form).object
+  }
+})
+
+const sourceFolder = await fromUuid(data.sourceUuid)
+const destinationFolder = await fromUuid(data.destinationUuid)
+
+if (!(sourceFolder instanceof Folder) || !(destinationFolder instanceof Folder))
+  return ui.notifications.warn(
+    'Wrong document type provided. Folders expected for source and destination.'
+  )
 
 // This will be prefixed to their name - put to empty string if you do not want a prefix
 let namePrefix = 'New '
@@ -35,5 +58,5 @@ let folderCopy = sourceFolder.contents.map(data => {
 getDocumentClass(sourceFolder.type).createDocuments(folderCopy)
 */
 ui.notifications.notify(
-  `Duplicated items from '${sourceFolder.name}' to '${destFolder.name}'`
+  `Duplicated items from '${sourceFolder.name}' to '${destinationFolder.name}'`
 )
