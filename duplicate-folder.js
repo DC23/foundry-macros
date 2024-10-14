@@ -7,10 +7,10 @@ Version 1.0
 
 // Change this to the ID of the source folder you want to copy
 // Folder id can be gained by left clicking the little icon in the header of the folder
-let sourceFolder = game.folders.get('[CHANGE THIS - Source folder ID]')
+let sourceFolder = game.folders.get('03ZNZvHcvT1k3vtn')
 // Change this to the ID of destination folder where the copies should end up in
 // Folder id can be gained by left clicking the little icon in the header of the folder
-let destFolder = game.folders.get('[CHANGE THIS - Destination folder')
+let destFolder = game.folders.get('a22vmLZxBWzABTqw')
 
 // This will be prefixed to their name - put to empty string if you do not want a prefix
 let namePrefix = 'New '
@@ -35,5 +35,5 @@ let folderCopy = sourceFolder.contents.map(data => {
 getDocumentClass(sourceFolder.type).createDocuments(folderCopy)
 */
 ui.notifications.notify(
-  `Duplicated items from '${sourceFolder}' to '${destFolder}`
+  `Duplicated items from '${sourceFolder.name}' to '${destFolder.name}'`
 )
