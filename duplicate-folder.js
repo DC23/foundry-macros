@@ -2,7 +2,7 @@
 A macro for the Foundry virtual tabletop that duplicates the contents of a folder
 
 Foundry v12
-Version 2.0
+Version 2.1
 */
 
 const { StringField, DocumentUUIDField } = foundry.data.fields
