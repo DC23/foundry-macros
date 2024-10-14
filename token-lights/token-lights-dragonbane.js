@@ -149,7 +149,8 @@ function noLight (token) {
       dim: 0,
       bright: 0,
       animation: { type: 'none' },
-      negative: false
+      negative: false, // do I want this?
+      luminosity: 0
     }
   })
 }
