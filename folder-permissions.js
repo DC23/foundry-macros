@@ -1,74 +1,74 @@
 /*
 A macro for the Foundry virtual tabletop that sets permissions on all items in a folder
 Foundry v12
-Version 1.0
+Version 2.1
 */
 
-const form = `
-  <div style="display: inline-block; width: 100px; padding: 0.5em">Folder:</div>
-  <input type="string" id="folderName">
-  <br />
+const { BooleanField, NumberField, DocumentUUIDField } = foundry.data.fields
+const { DialogV2 } = foundry.applications.api
 
-  <div style="display: inline-block; width: 100px; padding: 0.5em">All Players:</div>
-  <select id="desiredPermission" />
-    <option value="0">None</option>
-    <option value="1">Limited</option>
-    <option value="2">Observer</option>
-    <option value="3">Owner</option>
-  </select>
-  <br />
+// need to clone the ownerships object as it is frozen to be able to remove INHERIT from it.
+const levels = foundry.utils.deepClone(CONST.DOCUMENT_OWNERSHIP_LEVELS)
+delete levels.INHERIT
 
-  <span style="display: inline-block; padding: 0.5em">
-      <label>
-          <input type="checkbox" id="recurse" checked/>
-          Recurse into subfolders
-      </label>
-  </span>
-`
+// Build the fields for the dialog
+const choices = Object.entries(levels).reduce((acc, [label, value]) => {
+  acc.push({ value, label: label.toLowerCase().capitalize() })
+  return acc
+}, [])
+const ownershipField = new NumberField({
+  label: 'Ownership level',
+  choices
+}).toFormGroup({}, { name: 'ownership' }).outerHTML
 
-const dialog = new Dialog({
-  title: 'Set Folder Permissions',
-  content: form,
-  buttons: {
-    use: {
-      label: 'Apply permissions',
-      callback: applyPermissions
-    }
+const uuidField = new DocumentUUIDField({
+  label: 'Folder'
+}).toFormGroup({}, { name: 'uuid' }).outerHTML
+
+const recursiveField = new BooleanField({
+  label: 'Recursive'
+}).toFormGroup(
+  { rootId: 'world-ownership-recursive-check' },
+  { name: 'recursive', value: true }
+).outerHTML
+
+// now make the dialog with the above fields.
+const data = await DialogV2.prompt({
+  window: { title: 'Folder Ownership Management' },
+  position: { width: 400 },
+  content: ownershipField + uuidField + recursiveField,
+  ok: {
+    callback: (event, button) => new FormDataExtended(button.form).object
   }
-}).render(true)
+})
 
-async function applyPermissions (html) {
-  const folderName = $('#folderName').val()
-  const permissionText = $('#desiredPermission option:selected').text()
-  const permission = $('#desiredPermission option:selected').val()
-  const recursive = $('#recurse').is(':checked')
+// Update the permissions
 
-  const folders = game.folders.filter(f => f.name === folderName)
-  if (folders.length === 0) {
-    ui.notifications.error(`Folder not found: ${folderName}.`)
-  } else if (folders.length > 1) {
-    ui.notifications.error(
-      `${folders.length} folders called '${folderName}' found. For now, give your folder a temporary unique name to use this script.`
+const mainFolder = await fromUuid(data.uuid)
+if (!(mainFolder instanceof Folder))
+  return ui.notifications.warn(
+    'Wrong document type provided. A folder was expected.'
+  )
+
+// flatten all the folder contents into an array
+const docs = data.recursive
+  ? mainFolder.contents.concat(
+      mainFolder.getSubfolders(true).flatMap(e => e.contents)
     )
-  } else {
-    const folder_id = folders[0].id
-    const mainFolder = game.folders.get(folder_id)
-    const docs = recursive
-      ? mainFolder.contents.concat(
-          mainFolder.getSubfolders(true).flatMap(e => e.contents)
-        )
-      : mainFolder.contents
-    const updates = docs.map(e => ({
-      _id: e.id,
-      '_id: ownership.default': permission
-    }))
-    await mainFolder.documentClass.updateDocuments(updates)
-    console.log(docs)
-    console.log(updates)
-    ui.notifications.notify(
-      `${
-        recursive ? 'Recursively setting' : 'Setting'
-      } folder '${folderName}' to ${permissionText} (${permission})`
-    )
-  }
-}
+  : mainFolder.contents
+
+// build a list of updates for updateDocuments
+const updates = docs.map(e => ({
+  _id: e.id,
+  'ownership.default': data.ownership
+}))
+
+// update everything everywhere all at once
+await mainFolder.documentClass.updateDocuments(updates)
+
+// tell the user we're done
+ui.notifications.notify(
+  `${data.recursive ? 'Recursively setting' : 'Setting'} all items in folder '${
+    mainFolder.name
+  }' to ${choices[data.ownership].label}`
+)
