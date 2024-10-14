@@ -1,6 +1,9 @@
 /*
 A macro for the Foundry virtual tabletop that duplicates the contents of a folder
 
+Heavily based on the work of @bithir of the Dragonbane Discord.
+https://discord.com/channels/1173874944430579733/1238171351559180368/1238171351559180368
+
 Foundry v12
 Version 2.1
 */
