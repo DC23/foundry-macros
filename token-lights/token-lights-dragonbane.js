@@ -3,7 +3,7 @@ A macro for the Foundry virtual tabletop.
 Runs a dialog with token lighting options specific to the Dragonbane system.
 
 Foundry v12
-Version 1.0
+Version 2.0
 */
 
 const { BooleanField, NumberField, StringField } = foundry.data.fields
@@ -43,8 +43,6 @@ if (canvas.tokens.controlled.length > 0) {
     }
   })
 
-  // I can't work out how to get rid of the blank option, so force a null selection to have
-  // the same result as 'none'
   const lightSource = theDialog.lightSource
 
   for (let token of canvas.tokens.controlled) {
