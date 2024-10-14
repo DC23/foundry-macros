@@ -14,9 +14,10 @@ if (canvas.tokens.controlled.length > 0) {
   // Build the fields for the dialog
   const lightSourceField = new StringField({
     label: 'Light Source:',
-    blank: false,
-    hint: 'leave blank to clear the lights',
+    required: true,
+    initial: 'none',
     choices: {
+      none: 'No lights',
       torch: 'Torch',
       lantern: 'Lantern or Oil Lamp',
       candle: 'Tallow Candle',
@@ -44,7 +45,7 @@ if (canvas.tokens.controlled.length > 0) {
 
   // I can't work out how to get rid of the blank option, so force a null selection to have
   // the same result as 'none'
-  const lightSource = theDialog.lightSource ? theDialog.lightSource : 'none'
+  const lightSource = theDialog.lightSource
 
   for (let token of canvas.tokens.controlled) {
     ui.notifications.notify(
