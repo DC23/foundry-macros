@@ -1,5 +1,6 @@
 /*
 A macro for the Foundry virtual tabletop that sets permissions on all items in a folder
+
 Foundry v12
 Version 2.1
 */
