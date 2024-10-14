@@ -56,7 +56,7 @@ let folderCopy = sourceFolder.contents.map(data => {
     ...data.toObject(),
     name: `${namePrefix}${data.name}`,
     folder: destinationFolder.id,
-    ownership: {}
+    ownership: { default: data.ownership.default } // retain default ownership from source
   }
 })
 
