@@ -15,7 +15,7 @@ const DIM_LIGHT_GRID_SQUARES = 6
 
 // Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
 // Simply adjust to match the units per grid square in your game and the lighting settings should
-// work out. 
+// work out.
 // Value 2: bright light 10, dim light 12
 // Value 5: bright light 25, dim light 30
 // Value 6: bright light 30, dim light 36
@@ -41,7 +41,7 @@ if (canvas.tokens.controlled.length > 0) {
       torch: 'Torch',
       lantern: 'Lantern or Oil Lamp',
       candle: 'Tallow Candle',
-      magical: 'Magical Light',
+      magical: 'Magical Light'
     }
   }).toFormGroup({}, { name: 'lightSource' }).outerHTML
 
