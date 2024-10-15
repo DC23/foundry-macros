@@ -3,7 +3,7 @@ A macro for the Foundry virtual tabletop.
 Runs a dialog with token lighting options specific to the Dragonbane system.
 
 Foundry v12
-Version 2.3
+Version 2.4
 */
 
 // Some constants that I use across multiple lighting types
@@ -22,12 +22,12 @@ const COLOR_MOON_GLOW = '#d4d4d4'
 const GAME_MULTIPLIER_PER_SQUARE = 2
 
 // These two are for the standard lights - torches, lanterns, magical lighting
-const BRIGHT_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
-const DIM_LIGHT_RADIUS = 6 * GAME_MULTIPLIER_PER_SQUARE
+const BRIGHT_LIGHT_RADIUS = 4 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
 
 // These are for candles
-const BRIGHT_CANDLE_RADIUS = 2.5 * GAME_MULTIPLIER_PER_SQUARE
-const DIM_CANDLE_RADIUS = 3 * GAME_MULTIPLIER_PER_SQUARE
+const BRIGHT_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_CANDLE_RADIUS = 2.5 * GAME_MULTIPLIER_PER_SQUARE
 
 //--------------------------------------------------------------------------------
 // The Form
