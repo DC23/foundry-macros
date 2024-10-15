@@ -1,186 +1,168 @@
-/* 
-A macro for the Foundry virtual tabletop that lets a user configure their token's lighting settings. 
-Adapted for Dragonbane by JugglinDan from Sky Captain's foundry repo: https://github.com/Sky-Captain-13/foundry/blob/master/scriptMacros/tokenVision.js.
+/*
+A macro for the Foundry virtual tabletop.
+Runs a dialog with token lighting options specific to the Dragonbane system.
 
-Primary changes are that I removed the vision settings since Dragonbane doesn't require them, and I reduced the light sources down to 
-no light, candle, lantern, oil lamp, torch, and magical light.
-The various lantern subtypes are not in the Dragonbane core rules, but I like them so I left them in. If they are useful, great.
-Otherwise, they are easily ignored.
-
-Foundry v11, v12
-Version 1.5
+Foundry v12
+Version 2.5
 */
 
-let applyChanges = false
-new Dialog({
-  title: `Token Lights`,
-  content: `
-    <form>
-      <div class="form-group">
-        <label>Light Source:</label>
-        <select id="light-source" name="light-source">
-          <option value="none">None</option>
-          <option value="torch">Torch</option>
-          <option value="candle">Candle</option>
-          <option value="magical">Magical</option>
-          <option value="lantern">Lantern</option>
-          <option value="bullseye">Lantern (Bullseye)</option>
-          <option value="hooded-dim">Lantern (Hooded - Dim)</option>
-          <option value="hooded-half">Lantern (Hooded - Half)</option>
-          <option value="hooded-bright">Lantern (Hooded - Bright)</option>
-          <option value="darkness">Darkness</option>
-          <option value="plain">Plain White Light</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="subtle-torches">Subtle Torches:</label>
-        <input type="checkbox" name="subtle-torches" value="subtle-torches" id="subtle-torches" checked>
-      </div>
-    </form>
-    `,
-  buttons: {
-    yes: {
-      icon: "<i class='fas fa-check'></i>",
-      label: `Apply Changes`,
-      callback: () => (applyChanges = true)
-    },
-    no: {
-      icon: "<i class='fas fa-times'></i>",
-      label: `Cancel Changes`
+// Some constants that I use across multiple lighting types
+// First, some colours
+const COLOR_FIRE = '#a88115'
+const COLOR_WHITE = '#ffffff'
+const COLOR_MOON_GLOW = '#d4d4d4'
+
+// Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
+// Simply adjust to match the units per grid square in your game and the lighting settings should
+// work out.
+// Value 2: bright light 10, dim light 12
+// Value 5: bright light 25, dim light 30
+// Value 6: bright light 30, dim light 36
+// You can use decimal values to fine tune, and you can also change the way the radii are calculated.
+const GAME_MULTIPLIER_PER_SQUARE = 2
+
+// These two are for the standard lights - torches, lanterns, magical lighting
+const BRIGHT_LIGHT_RADIUS = 4 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
+
+// These are for candles
+const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
+
+//--------------------------------------------------------------------------------
+// The Form
+//--------------------------------------------------------------------------------
+const { BooleanField, NumberField, StringField } = foundry.data.fields
+const { DialogV2 } = foundry.applications.api
+
+// TODO: check if tokens are selected
+if (canvas.tokens.controlled.length > 0) {
+  // Build the fields for the dialog
+  const lightSourceField = new StringField({
+    label: 'Light Source:',
+    required: true,
+    initial: 'none',
+    choices: {
+      none: 'No lights',
+      torch: 'Torch',
+      lantern: 'Lantern or Oil Lamp',
+      candle: 'Tallow Candle',
+      magical: 'Magical Light'
     }
-  },
-  default: 'yes',
-  close: html => {
-    if (applyChanges) {
-      for (let token of canvas.tokens.controlled) {
-        // Get Light Options
-        let lightSource = html.find('[name="light-source"]')[0].value || 'none'
-        let dimLight = 12
-        let brightLight = 10
-        let lightAngle = 360
-        let lockRotation = token.document.light.lockRotation
-        let lightAnimation = token.document.light.animation
-        let lightColor = token.document.light.color
-        let animationType = 'flame'
-        let animationIntensity = 1
+  }).toFormGroup({}, { name: 'lightSource' }).outerHTML
 
-        if ($('#subtle-torches').is(':checked')) {
-          animationType = 'torch'
-          animationIntensity = 2
-        }
+  const subtleAnimationsField = new BooleanField({
+    label: 'Subtle Animations:'
+  }).toFormGroup(
+    { rootId: 'subtle-animations-check' },
+    { name: 'subtleAnimations', value: true }
+  ).outerHTML
 
-        // light preferences
-        const animationSpeed = 3
-        const colorFire = '#a88115'
-        const colorWhite = '#ffffff'
-        const colorMoonGlow = '#f4f1c9'
-        let lightAlpha = 0.4
-        let luminosity = 0.5
+  // now make the dialog with the above fields.
+  const theDialog = await DialogV2.prompt({
+    window: { title: 'Set Token Lighting' },
+    position: { width: 500 },
+    content: lightSourceField + subtleAnimationsField,
+    ok: {
+      callback: (event, button) => new FormDataExtended(button.form).object
+    }
+  })
 
-        switch (lightSource) {
-          case 'none':
-            dimLight = 0
-            brightLight = 0
-            lightAnimation = { type: 'none' }
-            break
-          case 'candle':
-            dimLight = 4
-            brightLight = 2
-            lightAnimation = {
-              type: animationType,
-              speed: animationSpeed * 2,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'bullseye':
-            lockRotation = false
-            lightAngle = 53.13
-            lightAnimation = {
-              type: animationType,
-              speed: animationSpeed,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'hooded-bright':
-          case 'lantern':
-            lightAnimation = {
-              type: animationType,
-              speed: animationSpeed,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'hooded-dim':
-            dimLight = 3
-            brightLight = 0.15
-            lightAnimation = {
-              type: animationType,
-              speed: animationSpeed,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'hooded-half':
-            dimLight = dimLight * 0.5
-            brightLight = brightLight * 0.5
-            lightAnimation = {
-              type: animationType,
-              speed: animationSpeed,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'plain':
-            lightAnimation = { type: 'none' }
-            lightColor = colorWhite
-            lightAlpha = 0.25 // plain white looks better at lower alpha, otherwise it oversaturates
-            break
-          case 'darkness':
-            lightAnimation = { type: 'none' }
-            lightColor = '#000000'
-            lightAlpha = 0.1
-            luminosity = -0.5
-            break
-          case 'torch':
-            lightAnimation = {
-              type: animationType,
-              speed: 5,
-              intensity: animationIntensity
-            }
-            lightColor = colorFire
-            break
-          case 'magical':
-            lightAnimation = { type: 'fog' }
-            lightColor = colorMoonGlow
-            lightAlpha = 0.3
-            break
-          default:
-            dimLight = token.document.light.dim
-            brightLight = token.document.light.bright
-            lightAngle = token.document.light.angle
-            lockRotation = token.document.light.lockRotation
-            lightAnimation = token.document.light.animation
-            lightAlpha = token.document.light.alpha
-            lightColor = token.document.light.color
-            luminosity = token.document.light.luminosity
-        }
+  //--------------------------------------------------------------------------------
+  // The lighting
+  //--------------------------------------------------------------------------------
 
-        // Update Token
-        console.log(`${token.document.name}: Setting light to ${lightSource})`)
-        token.document.update({
-          light: {
-            dim: dimLight,
-            bright: brightLight,
-            color: lightColor,
-            alpha: lightAlpha,
-            angle: lightAngle,
-            animation: lightAnimation,
-            luminosity: luminosity
-          }
-        })
-      }
+  const lightSource = theDialog.lightSource
+  const animationType = theDialog.subtleAnimations ? 'torch' : 'flame'
+  const animationIntensity = theDialog.subtleAnimations ? 2 : 1
+
+  for (let token of canvas.tokens.controlled) {
+    ui.notifications.notify(
+      `${token.document.name}: Setting light to ${lightSource}`
+    )
+    switch (lightSource) {
+      default:
+      case 'none':
+        noLight(token)
+        break
+
+      case 'torch':
+        torchLighting(
+          token,
+          animationType,
+          animationIntensity,
+          5,
+          DIM_LIGHT_RADIUS,
+          BRIGHT_LIGHT_RADIUS * 0.9
+        )
+        break
+
+      case 'lantern':
+        torchLighting(token, animationType, animationIntensity, 3)
+        break
+
+      case 'candle':
+        torchLighting(
+          token,
+          animationType,
+          animationIntensity,
+          5,
+          DIM_CANDLE_RADIUS,
+          BRIGHT_CANDLE_RADIUS
+        )
+        break
+
+      case 'magical':
+        torchLighting(
+          token,
+          'fog', // animation type
+          animationIntensity, // animation intensity
+          3, // animation speed
+          DIM_LIGHT_RADIUS,
+          BRIGHT_LIGHT_RADIUS,
+          COLOR_MOON_GLOW, // light color
+          0.3 // light color
+        )
+        break
     }
   }
-}).render(true)
+} else {
+  ui.notifications.warn('No tokens selected')
+}
+
+function torchLighting (
+  token,
+  animationType,
+  animationIntensity,
+  animationSpeed,
+  dimRadius = DIM_LIGHT_RADIUS,
+  brightRadius = BRIGHT_LIGHT_RADIUS,
+  color = COLOR_FIRE,
+  alpha = 0.4
+) {
+  token.document.update({
+    light: {
+      color: color,
+      alpha: alpha,
+      dim: dimRadius,
+      bright: brightRadius,
+      luminosity: 0.5,
+      animation: {
+        type: animationType,
+        speed: animationSpeed,
+        intensity: animationIntensity
+      }
+    }
+  })
+}
+
+function noLight (token) {
+  token.document.update({
+    light: {
+      dim: 0,
+      bright: 0,
+      luminosity: 0.5,
+      animation: { type: 'none' }
+    }
+  })
+}
