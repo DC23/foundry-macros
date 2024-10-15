@@ -3,7 +3,7 @@ A macro for the Foundry virtual tabletop.
 Runs a dialog with token lighting options specific to the Dragonbane system.
 
 Foundry v12
-Version 2.0
+Version 2.1
 */
 
 // Some constants that I use across multiple lighting types
@@ -42,7 +42,6 @@ if (canvas.tokens.controlled.length > 0) {
       lantern: 'Lantern or Oil Lamp',
       candle: 'Tallow Candle',
       magical: 'Magical Light',
-      darkness: 'Darkness'
     }
   }).toFormGroup({}, { name: 'lightSource' }).outerHTML
 
@@ -112,11 +111,6 @@ if (canvas.tokens.controlled.length > 0) {
           0.3 // light color
         )
         break
-
-      case 'darkness':
-        noLight(token)
-        darkness(token)
-        break
     }
   }
 } else {
@@ -135,11 +129,10 @@ function torchLighting (
 ) {
   token.document.update({
     light: {
-      dim: dimRadius,
-      bright: brightRadius,
       color: color,
       alpha: alpha,
-      angle: 360,
+      dim: dimRadius,
+      bright: brightRadius,
       luminosity: 0.5,
       animation: {
         type: animationType,
@@ -155,23 +148,7 @@ function noLight (token) {
     light: {
       dim: 0,
       bright: 0,
-      animation: { type: 'none' },
-      negative: false, // do I want this?
-      luminosity: 0
-    }
-  })
-}
-
-function darkness (token) {
-  token.document.update({
-    light: {
-      color: '#000000',
-      alpha: 0.1,
-      dim: 0,
-      bright: 0,
-      luminosity: -0.5,
-      dim: GAME_MULTIPLIER_PER_SQUARE * DIM_LIGHT_GRID_SQUARES,
-      bright: GAME_MULTIPLIER_PER_SQUARE * BRIGHT_LIGHT_GRID_SQUARES,
+      luminosity: 0.5,
       animation: { type: 'none' }
     }
   })
