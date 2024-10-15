@@ -3,15 +3,14 @@ A macro for the Foundry virtual tabletop.
 Runs a dialog with token lighting options specific to the Dragonbane system.
 
 Foundry v12
-Version 2.1
+Version 2.3
 */
 
 // Some constants that I use across multiple lighting types
+// First, some colours
 const COLOR_FIRE = '#a88115'
 const COLOR_WHITE = '#ffffff'
-const COLOR_MOON_GLOW = '#f4f1c9'
-const BRIGHT_LIGHT_GRID_SQUARES = 5
-const DIM_LIGHT_GRID_SQUARES = 6
+const COLOR_MOON_GLOW = '#d4d4d4'
 
 // Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
 // Simply adjust to match the units per grid square in your game and the lighting settings should
@@ -19,9 +18,16 @@ const DIM_LIGHT_GRID_SQUARES = 6
 // Value 2: bright light 10, dim light 12
 // Value 5: bright light 25, dim light 30
 // Value 6: bright light 30, dim light 36
-// You can use decimal values to fine tune, and you can also change the values of BRIGHT_LIGHT_GRID_SQUARES
-// and DIM_LIGHT_GRID_SQUARES as well.
+// You can use decimal values to fine tune, and you can also change the way the radii are calculated.
 const GAME_MULTIPLIER_PER_SQUARE = 2
+
+// These two are for the standard lights - torches, lanterns, magical lighting
+const BRIGHT_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_LIGHT_RADIUS = 6 * GAME_MULTIPLIER_PER_SQUARE
+
+// These are for candles
+const BRIGHT_CANDLE_RADIUS = 2.5 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_CANDLE_RADIUS = 3 * GAME_MULTIPLIER_PER_SQUARE
 
 //--------------------------------------------------------------------------------
 // The Form
@@ -81,7 +87,14 @@ if (canvas.tokens.controlled.length > 0) {
         break
 
       case 'torch':
-        torchLighting(token, animationType, animationIntensity, 5)
+        torchLighting(
+          token,
+          animationType,
+          animationIntensity,
+          5,
+          DIM_LIGHT_RADIUS,
+          BRIGHT_LIGHT_RADIUS * 0.9
+        )
         break
 
       case 'lantern':
@@ -94,8 +107,8 @@ if (canvas.tokens.controlled.length > 0) {
           animationType,
           animationIntensity,
           5,
-          GAME_MULTIPLIER_PER_SQUARE * 3,
-          GAME_MULTIPLIER_PER_SQUARE * 2.5
+          DIM_CANDLE_RADIUS,
+          BRIGHT_CANDLE_RADIUS
         )
         break
 
@@ -103,10 +116,10 @@ if (canvas.tokens.controlled.length > 0) {
         torchLighting(
           token,
           'fog', // animation type
-          1, // animation intensity
+          animationIntensity, // animation intensity
           3, // animation speed
-          GAME_MULTIPLIER_PER_SQUARE * DIM_LIGHT_GRID_SQUARES, // dim radius
-          GAME_MULTIPLIER_PER_SQUARE * BRIGHT_LIGHT_GRID_SQUARES, // bright radius
+          DIM_LIGHT_RADIUS,
+          BRIGHT_LIGHT_RADIUS,
           COLOR_MOON_GLOW, // light color
           0.3 // light color
         )
@@ -122,8 +135,8 @@ function torchLighting (
   animationType,
   animationIntensity,
   animationSpeed,
-  dimRadius = GAME_MULTIPLIER_PER_SQUARE * DIM_LIGHT_GRID_SQUARES,
-  brightRadius = GAME_MULTIPLIER_PER_SQUARE * BRIGHT_LIGHT_GRID_SQUARES,
+  dimRadius = DIM_LIGHT_RADIUS,
+  brightRadius = BRIGHT_LIGHT_RADIUS,
   color = COLOR_FIRE,
   alpha = 0.4
 ) {
