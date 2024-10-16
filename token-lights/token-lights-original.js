@@ -7,6 +7,8 @@ no light, candle, lantern, oil lamp, torch, and magical light.
 The various lantern subtypes are not in the Dragonbane core rules, but I like them so I left them in. If they are useful, great.
 Otherwise, they are easily ignored.
 
+This version is quite old now, and the Darkness setting is particularly buggy in Foundry v12.
+
 Foundry v11, v12
 Version 1.5
 */

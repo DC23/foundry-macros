@@ -3,7 +3,7 @@ A macro for the Foundry virtual tabletop.
 Runs a dialog with token lighting options specific to the Dragonbane system.
 
 Foundry v12
-Version 2.5
+Version 3.0
 */
 
 // Some constants that I use across multiple lighting types
@@ -29,49 +29,94 @@ const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
 const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
 const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
 
+// Utility functions
+// TODO: rewrite with objects to clean up calls
+function torchLighting (
+  token,
+  animationType,
+  animationIntensity,
+  animationSpeed,
+  dimRadius = DIM_LIGHT_RADIUS,
+  brightRadius = BRIGHT_LIGHT_RADIUS,
+  color = COLOR_FIRE,
+  alpha = 0.4
+) {
+  token.document.update({
+    light: {
+      color: color,
+      alpha: alpha,
+      dim: dimRadius,
+      bright: brightRadius,
+      luminosity: 0.5,
+      animation: {
+        type: animationType,
+        speed: animationSpeed,
+        intensity: animationIntensity
+      }
+    }
+  })
+}
+
+function noLight (token) {
+  token.document.update({
+    light: {
+      dim: 0,
+      bright: 0,
+      luminosity: 0.5,
+      animation: { type: 'none' }
+    }
+  })
+}
+
 //--------------------------------------------------------------------------------
 // The Form
 //--------------------------------------------------------------------------------
-const { BooleanField, NumberField, StringField } = foundry.data.fields
-const { DialogV2 } = foundry.applications.api
+if (canvas.tokens.controlled.length === 0) {
+  ui.notifications.notify('No tokens selected')
+  exit
+}
 
-// TODO: check if tokens are selected
-if (canvas.tokens.controlled.length > 0) {
-  // Build the fields for the dialog
-  const lightSourceField = new StringField({
-    label: 'Light Source:',
-    required: true,
-    initial: 'none',
-    choices: {
-      none: 'No lights',
-      torch: 'Torch',
-      lantern: 'Lantern or Oil Lamp',
-      candle: 'Tallow Candle',
-      magical: 'Magical Light'
-    }
-  }).toFormGroup({}, { name: 'lightSource' }).outerHTML
+// Since I'm now returning a promise from the dialog callback, I need to handle exceptions
+// otherwise I get an uncaught exception if the dialog is dismissed without ok being clicked.
+try {
+  const { DialogV2 } = foundry.applications.api
+  const who =
+    canvas.tokens.controlled.length === 1
+      ? canvas.tokens.controlled[0].document.name
+      : `${canvas.tokens.controlled.length} tokens`
 
-  const subtleAnimationsField = new BooleanField({
-    label: 'Subtle Animations:'
-  }).toFormGroup(
-    { rootId: 'subtle-animations-check' },
-    { name: 'subtleAnimations', value: true }
-  ).outerHTML
-
-  // now make the dialog with the above fields.
   const theDialog = await DialogV2.prompt({
-    window: { title: 'Set Token Lighting' },
-    position: { width: 500 },
-    content: lightSourceField + subtleAnimationsField,
+    window: { title: `Set Lights: ${who}` },
+    // position: { width: 500 },
+    content: `
+    <form>
+      <div class="">
+        <label style="display: block; margin-bottom: 5px;"><strong>Light Source:</strong></label>
+        <label style="display: block; margin-bottom: 5px;"><input type="radio" name="choice" value="none" checked>No lights</label>
+        <label style="display: block; margin-bottom: 5px;"><input type="radio" name="choice" value="torch">Torch</label>
+        <label style="display: block; margin-bottom: 5px;"><input type="radio" name="choice" value="lantern">Lantern or Oil Lamp</label>
+        <label style="display: block; margin-bottom: 5px;"><input type="radio" name="choice" value="candle">Tallow Candle</label>
+        <label style="display: block; margin-bottom: 5px;"><input type="radio" name="choice" value="magical">Magical Light</label>
+      </div>
+      <div class="">
+        <label for="subtleAnimations">Subtle Animations:</label>
+        <input type="checkbox" name="subtleAnimations" value="subtleAnimations" id="subtleAnimations" checked>
+      </div>
+    </form>
+  `,
     ok: {
-      callback: (event, button) => new FormDataExtended(button.form).object
+      callback: (event, button, dialog) => {
+        return Promise.resolve({
+          lightSource: button.form.elements.choice.value,
+          subtleAnimations: button.form.elements.subtleAnimations.checked
+        })
+      }
     }
   })
 
   //--------------------------------------------------------------------------------
   // The lighting
   //--------------------------------------------------------------------------------
-
   const lightSource = theDialog.lightSource
   const animationType = theDialog.subtleAnimations ? 'torch' : 'flame'
   const animationIntensity = theDialog.subtleAnimations ? 2 : 1
@@ -126,43 +171,4 @@ if (canvas.tokens.controlled.length > 0) {
         break
     }
   }
-} else {
-  ui.notifications.warn('No tokens selected')
-}
-
-function torchLighting (
-  token,
-  animationType,
-  animationIntensity,
-  animationSpeed,
-  dimRadius = DIM_LIGHT_RADIUS,
-  brightRadius = BRIGHT_LIGHT_RADIUS,
-  color = COLOR_FIRE,
-  alpha = 0.4
-) {
-  token.document.update({
-    light: {
-      color: color,
-      alpha: alpha,
-      dim: dimRadius,
-      bright: brightRadius,
-      luminosity: 0.5,
-      animation: {
-        type: animationType,
-        speed: animationSpeed,
-        intensity: animationIntensity
-      }
-    }
-  })
-}
-
-function noLight (token) {
-  token.document.update({
-    light: {
-      dim: 0,
-      bright: 0,
-      luminosity: 0.5,
-      animation: { type: 'none' }
-    }
-  })
-}
+} catch (e) {}
