@@ -166,7 +166,7 @@ try {
           DIM_LIGHT_RADIUS,
           BRIGHT_LIGHT_RADIUS,
           COLOR_MOON_GLOW, // light color
-          0.3 // light color
+          0.3 // alpha
         )
         break
     }
