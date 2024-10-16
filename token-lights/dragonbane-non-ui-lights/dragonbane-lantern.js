@@ -10,8 +10,8 @@ for (let token of canvas.tokens.controlled) {
     light: {
       color: '#a88115',
       alpha: 0.4,
-      dim: 10, // This is the torch radius in metres or game units
-      bright: 8,  // This should be a little smaller than the dim radius
+      dim: 10, // This is the light radius in metres or game units
+      bright: 8, // This should be a little smaller than the dim radius
       luminosity: 0.5,
       animation: {
         type: 'torch',
@@ -21,4 +21,3 @@ for (let token of canvas.tokens.controlled) {
     }
   })
 }
-
