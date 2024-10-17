@@ -12,8 +12,12 @@ Version 1.2
 */
 
 const table = await fromUuid(args[0])
+
+if (!(table instanceof RollTable))
+  return ui.notifications.warn('This macro only accepts a RollTable UUID')
+
 if (args.length > 1 && args[1] >= 1 && args[1] <= table.results.size) {
-  await table.draw({roll: new Roll(args[1].toString())});
+  await table.draw({ roll: new Roll(args[1].toString()) })
 } else {
-  await table.draw();
+  await table.draw()
 }
