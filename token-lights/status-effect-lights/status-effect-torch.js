@@ -7,7 +7,7 @@ Foundry v12
 Version 1.2
 */
 
-if (token && actor) {
+if (token) {
   token.document.update({
     light: {
       color: '#a88115',
