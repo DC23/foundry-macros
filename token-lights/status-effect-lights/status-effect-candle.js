@@ -3,8 +3,8 @@ Macro for setting a token lighting to torch light from a status effect selection
 Will clear all other lighting status effects from the token.
 Matches the torch setting of the token-lights-dragonbane.js Dialog macro.
 
-Foundry v11, v12
-Version 1.0
+Foundry v12
+Version 1.1
 */
 
 // ID values obtained by first creating the effects in Condition Lab then exporting the custom effects to JSON.
@@ -14,9 +14,7 @@ const LANTERN_ID = 'vlhmJysWhlnT37pd'
 const CANDLE_ID = 'SMpoK2V52jbX1gqE'
 const MAGICAL_ID = 'K5IlSedG8PAqzazF'
 
-// FIXME: this is wrong. For macros called from Condition Lab, I shouldn't be using the controlled tokens.
-// The token should be an argument or something.
-for (let token of canvas.tokens.controlled) {
+if (token && actor) {
   // turn off the other effects for this token
   function effectOff (id) {
     if (token.document.hasStatusEffect(id)) token.actor.toggleStatusEffect(id)
