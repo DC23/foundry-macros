@@ -16,7 +16,7 @@ canvas.scene.update({"environment.darknessLevel":0.6},{animateDarkness:3000})
 // This is a nice workaround for the lack of multiselect and edit on lights. 
 // Can be used to edit any properties. I needed to change animation intensity on a swamp map, so
 // that's what I've saved here :)
-const lights = canvas.scene.lights.filter(l => l.flags.tagger.tags.includes('swamp-fog'))
+const lights = canvas.scene.lights.filter(l => l.flags.tagger.tags && l.flags.tagger.tags.includes('swamp-fog'))
 const updates = lights.map(l => ({ _id: l.id, 'config.animation.intensity': 5}))
 if (updates) {
   await canvas.scene.lights.update(updates)
