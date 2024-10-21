@@ -29,7 +29,7 @@ function validate_clock (clock, name, segments) {
 }
 
 /**
- * 
+ * Gets a validated timekeeping progress clock by name.
  * @param {String} name 
  * @param {Number} segments 
  * @returns The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
