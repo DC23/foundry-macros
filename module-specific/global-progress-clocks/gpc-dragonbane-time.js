@@ -172,23 +172,39 @@ calculate diffs: new.days - curr.days, new.shift - curr.shift etc
 output messages about the passage of time - days, shifts etc
 
 */
-  if (increment > 0) {
+  // FIXME: should be > 0 once I finish testing
+  if (increment >= 0) {
     console.log(`Incrementing time by ${increment} stretches`)
 
-    // get the current time in stretches
+    // get the current time in stretches, noting the conversion from 1-based
+    // to 0-based
+    const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
     const currentTime = {
-      stretch: stretch.value,
-      shift: shift.value,
-      day: day.value
+      stretch: stretch.value - 1,
+      shift: shift.value - 1,
+      day: day.value - 1
     }
     currentTime.totalStretches =
       currentTime.stretch +
       currentTime.shift * STRETCHES_PER_SHIFT +
-      currentTime.day * SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
+      currentTime.day * STRETCHES_PER_DAY
     console.log(currentTime)
 
-    // Add the increment then factor back into days, shifts, & stretches
-    const newStretches = increment + currentTime.totalStretches
+    // Add the increment then factor back into days, shifts, & stretches to get the new time
+    // in the same format
+    var remainingStretches = increment + currentTime.totalStretches
+    const newDays = Math.floor(remainingStretches / STRETCHES_PER_DAY)
+    remainingStretches = remainingStretches % STRETCHES_PER_DAY
+    const newShifts = Math.floor(remainingStretches / SHIFTS_PER_DAY)
+    remainingStretches = remainingStretches % SHIFTS_PER_DAY
+    const newStretches = remainingStretches
+    const newTime = {
+      stretch: newStretches,
+      shift: newShifts,
+      day: newDays,
+      totalStretches: increment + currentTime.totalStretches
+    }
+    console.log(newTime)
   }
 }
 
