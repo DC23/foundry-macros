@@ -146,8 +146,53 @@ function incrementShift (shift, day, count) {
  * @param {Object} shift the shift clock
  * @param {Object} day the day clock
  */
-function newIncrement (count, stretch, shift, day) {}
+function newIncrement (increment, stretch, shift, day) {
+  /*
+There's a mismatch between GPC clocks and how I want to use them. A GPC clock with N segments has N+1
+display states, corresponding to 0 filled segments through to N filled segments. With this system, I'm
+using an N segment clock to represent N units of time, not N+1. That's why a clock is never shown with 
+zero filled segments. To simplify the math in this function, I use a small trick of performing the 
+calculations with 0-based numbers in the range [0..N) representing the N states that I use for a clock.
+When it comes time to set that time into the GPC clock, I add 1 since the display is 1-based. 
+An example might help. There are 4 Dragonbane shifts in a day. The 0-based range I use to calculate this is 
+[0, 1, 2, 3] or [0..4). Since we never display an empty segment, the first shift to display has value 1, 
+and the last has value 4, which is the range [1..4].
 
+Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer arithmetic much simpler.
+I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
+
+
+The algorithm:
+
+check that increment is > 0
+add current time in stretches to increment in stretches
+factor total into days, shifts, and stretches
+set the new values
+calculate diffs: new.days - curr.days, new.shift - curr.shift etc
+output messages about the passage of time - days, shifts etc
+
+*/
+  if (increment > 0) {
+    console.log(`Incrementing time by ${increment} stretches`)
+
+    // get the current time in stretches
+    const currentTime = {
+      stretch: stretch.value,
+      shift: shift.value,
+      day: day.value
+    }
+    currentTime.totalStretches =
+      currentTime.stretch +
+      currentTime.shift * STRETCHES_PER_SHIFT +
+      currentTime.day * SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
+    console.log(currentTime)
+
+    // Add the increment then factor back into days, shifts, & stretches
+    const newStretches = increment + currentTime.totalStretches
+  }
+}
+
+// Get the clocks and dispatch
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
