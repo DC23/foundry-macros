@@ -7,5 +7,5 @@ Foundry v12
 Version 1.0
 */
 
-const macro = game.macros.getName("gpc-dragonbane-time");
-await macro.execute({mode:"stretch", count: 1});
+const macro = game.macros.getName('gpc-dragonbane-time')
+await macro.execute({ mode: 'stretch', count: 1 })

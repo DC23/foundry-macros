@@ -114,7 +114,7 @@ function incrementStretch (stretch, shift, day) {
 }
 
 // TODO: Code replication here and above looks bad, but it will change once this function
-// implements larger increment amounts. I'll make sure to pull the chat messages out to 
+// implements larger increment amounts. I'll make sure to pull the chat messages out to
 // common functions at least, and refactor when I see tractable replication.
 function incrementShift (shift, day, count) {
   if (shift.value < shift.max) {
@@ -139,6 +139,15 @@ function incrementShift (shift, day, count) {
   }
 }
 
+/**
+ *
+ * @param {Number} stretchCount the number of stretches to increment
+ * @param {Object} stretch the stretch clock
+ * @param {Object} shift the shift clock
+ * @param {Object} day the day clock
+ */
+function newIncrement (count, stretch, shift, day) {}
+
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
@@ -148,6 +157,14 @@ const count = scope.count
 console.log(count)
 
 if (stretch && shift && day) {
-  if (mode === 'stretch') incrementStretch(stretch, shift, day)
-  else if (mode === 'shift') incrementShift(shift, day, count)
+  switch (mode) {
+    case 'stretch':
+      incrementStretch(stretch, shift, day)
+      break
+    case 'shift':
+      incrementShift(shift, day, count)
+      break
+    case 'increment':
+      newIncrement(count, stretch, shift, day)
+  }
 }
