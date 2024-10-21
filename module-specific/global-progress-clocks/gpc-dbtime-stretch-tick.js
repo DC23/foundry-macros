@@ -11,6 +11,22 @@ Version 1.0
 */
 
 /**
+ * Customisable bits and pieces go here
+ */
+// 24 is the Dragonbane standard. You can set this smaller if you want less fine-grained tracking
+const STRETCHES_PER_SHIFT = 24 
+const STRETCH_CLOCK_NAME = "Stretch"
+
+const SHIFTS_PER_DAY = 4
+const SHIFT_CLOCK_NAME = "Shift"
+
+// This does the same thing as the SHIFTS_PER_DAY and STRETCHES_PER_DAY, but since I don't have a larger clock
+// it's not days per anything.
+const DAY_CLOCK_SEGMENTS = 30
+const DAY_CLOCK_NAME = "Day"
+
+
+/**
  * Validates a Global Progress Clock clock.
  * Since so much of these scripts depend on these clocks being configured correctly, but
  * that configuration is outside the control of the scripts, the least I can do is check
@@ -63,9 +79,9 @@ function reset (clock, value = 1) {
   window.clockDatabase.update({ id: clock.id, value: value })
 }
 
-const stretch = getValidClock('Stretch', 24)
-const shift = getValidClock('Shift', 4)
-const day = getValidClock('Day', 30)
+const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
+const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
+const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
 
 if (stretch && shift && day) {
   if (stretch.value < stretch.max) {
