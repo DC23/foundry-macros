@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.0
+Version 1.7
 */
 
 /**
@@ -154,7 +154,6 @@ const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
 
 const mode = scope.mode
 const count = scope.count
-console.log(count)
 
 if (stretch && shift && day) {
   switch (mode) {
