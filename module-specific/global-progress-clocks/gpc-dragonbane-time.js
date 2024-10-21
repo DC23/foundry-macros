@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.13
+Version 1.14
 */
 
 /**
@@ -74,69 +74,8 @@ function getValidClock (name, segments) {
   return clock
 }
 
-function tick (clock) {
-  window.clockDatabase.update({ id: clock.id, value: clock.value + 1 })
-}
-
-function reset (clock, value = 1) {
+function setClock (clock, value = 1) {
   window.clockDatabase.update({ id: clock.id, value: value })
-}
-
-function incrementStretch (stretch, shift, day) {
-  if (stretch.value < stretch.max) {
-    // tick within current stretch
-    console.log('stretch tick')
-    tick(stretch)
-  } else {
-    if (shift.value < shift.max) {
-      // tick will end the stretch and advance the shift
-      console.log('new shift')
-      reset(stretch)
-      tick(shift)
-
-      // Chat message - It's a new shift
-    } else {
-      // it's a new day!
-      console.log('new day')
-      reset(stretch)
-      reset(shift)
-
-      if (day.value < day.max) {
-        //reset stretch and shift, tick the day
-        tick(day)
-      } else {
-        reset(day)
-      }
-
-      // Chat message - It's a new day
-    }
-  }
-}
-
-// TODO: Code replication here and above looks bad, but it will change once this function
-// implements larger increment amounts. I'll make sure to pull the chat messages out to
-// common functions at least, and refactor when I see tractable replication.
-function incrementShift (shift, day, count) {
-  if (shift.value < shift.max) {
-    // tick will end the stretch and advance the shift
-    console.log('new shift')
-    tick(shift)
-
-    // Chat message - It's a new shift
-  } else {
-    // it's a new day!
-    console.log('new day')
-    reset(shift)
-
-    if (day.value < day.max) {
-      //reset shift, tick the day
-      tick(day)
-    } else {
-      reset(day)
-    }
-
-    // Chat message - It's a new day
-  }
 }
 
 /**
@@ -146,7 +85,8 @@ function incrementShift (shift, day, count) {
  * @param {Object} shift the shift clock
  * @param {Object} day the day clock
  */
-function newIncrement (increment, stretch, shift, day) {
+function increment (increment, stretch, shift, day) {
+
   /*
 There's a mismatch between GPC clocks and how I want to use them. A GPC clock with N segments has N+1
 display states, corresponding to 0 filled segments through to N filled segments. With this system, I'm
@@ -160,24 +100,12 @@ and the last has value 4, which is the range [1..4].
 
 Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer arithmetic much simpler.
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
-
-
-The algorithm:
-
-check that increment is > 0
-add current time in stretches to increment in stretches
-factor total into days, shifts, and stretches
-set the new values
-calculate diffs: new.days - curr.days, new.shift - curr.shift etc
-output messages about the passage of time - days, shifts etc
-
 */
   // FIXME: should be > 0 once I finish testing
   if (increment >= 0) {
     console.log(`Incrementing time by ${increment} stretches`)
 
-    // get the current time in stretches, noting the conversion from 1-based
-    // to 0-based
+    // get the current time in stretches, noting the conversion from 1-based to 0-based
     const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
     const currentTime = {
       stretch: stretch.value - 1,
@@ -211,29 +139,29 @@ output messages about the passage of time - days, shifts etc
     )
 
     // set the new time, noting that we convert back to 1-based from our 0-based calculations
-    reset(stretch, newTime.stretch + 1)
-    reset(shift, newTime.shift + 1)
-    reset(day, newTime.day + 1)
+    setClock(stretch, newTime.stretch + 1)
+    setClock(shift, newTime.shift + 1)
+    setClock(day, newTime.day + 1)
   }
 }
 
-// Get the clocks and dispatch
+// Get the clocks
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
 
+// get the macro arguments
 const mode = scope.mode
 const count = scope.count
 
+// if we have valid clocks, then dispatch to the correct handler
 if (stretch && shift && day) {
+  // It's a switch because I used to have more options, but they've been deprecated by the new increment
+  // code that handles arbitrary leaps in time. 
+  // Keeping the switch since I might want more options in future.
+  // Code smells be damned!
   switch (mode) {
-    case 'stretch':
-      incrementStretch(stretch, shift, day)
-      break
-    case 'shift':
-      incrementShift(shift, day, count)
-      break
     case 'increment':
-      newIncrement(count, stretch, shift, day)
+      increment(count, stretch, shift, day)
   }
 }
