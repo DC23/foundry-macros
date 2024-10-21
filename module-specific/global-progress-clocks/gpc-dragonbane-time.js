@@ -16,7 +16,8 @@ Version 1.0
  * Customisable bits and pieces go here
  */
 // 24 is the Dragonbane standard. You can set this smaller if you want less fine-grained tracking
-const STRETCHES_PER_SHIFT = 24
+// FIXME: revert to 24 before release. 4 is a test value
+const STRETCHES_PER_SHIFT = 4
 const STRETCH_CLOCK_NAME = 'Stretch'
 
 const SHIFTS_PER_DAY = 4
@@ -24,7 +25,8 @@ const SHIFT_CLOCK_NAME = 'Shift'
 
 // This does the same thing as the SHIFTS_PER_DAY and STRETCHES_PER_DAY, but since I don't have a larger clock
 // it's not days per anything.
-const DAY_CLOCK_SEGMENTS = 30
+// FIXME: revert to 30 before release. 7 is a test value
+const DAY_CLOCK_SEGMENTS = 7
 const DAY_CLOCK_NAME = 'Day'
 
 /**
