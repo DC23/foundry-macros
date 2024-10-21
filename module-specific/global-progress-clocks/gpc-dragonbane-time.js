@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.7
+Version 1.13
 */
 
 /**
@@ -188,23 +188,32 @@ output messages about the passage of time - days, shifts etc
       currentTime.stretch +
       currentTime.shift * STRETCHES_PER_SHIFT +
       currentTime.day * STRETCHES_PER_DAY
-    console.log(currentTime)
+    console.log(
+      `Current time: ${currentTime.stretch}.${currentTime.shift}.${currentTime.day} (${currentTime.totalStretches})`
+    )
 
     // Add the increment then factor back into days, shifts, & stretches to get the new time
     // in the same format
-    var remainingStretches = increment + currentTime.totalStretches
-    const newDays = Math.floor(remainingStretches / STRETCHES_PER_DAY)
-    remainingStretches = remainingStretches % STRETCHES_PER_DAY
-    const newShifts = Math.floor(remainingStretches / SHIFTS_PER_DAY)
-    remainingStretches = remainingStretches % SHIFTS_PER_DAY
-    const newStretches = remainingStretches
     const newTime = {
-      stretch: newStretches,
-      shift: newShifts,
-      day: newDays,
+      stretch: 0,
+      shift: 0,
+      day: 0,
       totalStretches: increment + currentTime.totalStretches
     }
-    console.log(newTime)
+    var remainingStretches = newTime.totalStretches
+    newTime.day = Math.floor(remainingStretches / STRETCHES_PER_DAY)
+    remainingStretches = remainingStretches % STRETCHES_PER_DAY
+    newTime.shift = Math.floor(remainingStretches / SHIFTS_PER_DAY)
+    remainingStretches = remainingStretches % SHIFTS_PER_DAY
+    newTime.stretch = remainingStretches
+    console.log(
+      `New time: ${newTime.stretch}.${newTime.shift}.${newTime.day} (${newTime.totalStretches})`
+    )
+
+    // set the new time, noting that we convert back to 1-based from our 0-based calculations
+    reset(stretch, newTime.stretch + 1)
+    reset(shift, newTime.shift + 1)
+    reset(day, newTime.day + 1)
   }
 }
 
