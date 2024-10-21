@@ -78,17 +78,22 @@ if (stretch && shift && day) {
       console.log('new shift')
       reset(stretch)
       tick(shift)
+
+      // Chat message - It's a new shift
     } else {
       // it's a new day!
       console.log('new day')
       reset(stretch)
       reset(shift)
+
       if (day.value < day.max) {
         //reset stretch and shift, tick the day
         tick(day)
       } else {
         reset(day)
       }
+
+      // Chat message - It's a new day
     }
   }
 }
