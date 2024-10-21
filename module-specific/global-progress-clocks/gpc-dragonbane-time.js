@@ -1,7 +1,9 @@
 /*
 A macro for the Foundry virtual tabletop.
 
-Ticks the Dragonbane Timekeeping clocks forward by 1 stretch.
+Implements all the functionality for Dragonbane timekeeping using Global Progress Clocks
+When you add this macro to Foundry, you must call it "gpc-dragonbane-time" for the other 
+macros to find it.
 
 Dependencies: 
   - Global Progress Clocks >= 0.4.5
