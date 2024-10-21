@@ -80,7 +80,7 @@ function reset (clock, value = 1) {
   window.clockDatabase.update({ id: clock.id, value: value })
 }
 
-function incrementStretch () {
+function incrementStretch (stretch, shift, day) {
   if (stretch.value < stretch.max) {
     // tick within current stretch
     console.log('stretch tick')
@@ -111,6 +111,32 @@ function incrementStretch () {
   }
 }
 
+// TODO: Code replication here and above looks bad, but it will change once this function
+// implements larger increment amounts. I'll make sure to pull the chat messages out to 
+// common functions at least, and refactor when I see tractable replication.
+function incrementShift (shift, day, count) {
+  if (shift.value < shift.max) {
+    // tick will end the stretch and advance the shift
+    console.log('new shift')
+    tick(shift)
+
+    // Chat message - It's a new shift
+  } else {
+    // it's a new day!
+    console.log('new day')
+    reset(shift)
+
+    if (day.value < day.max) {
+      //reset shift, tick the day
+      tick(day)
+    } else {
+      reset(day)
+    }
+
+    // Chat message - It's a new day
+  }
+}
+
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
@@ -121,4 +147,5 @@ console.log(count)
 
 if (stretch && shift && day) {
   if (mode === 'stretch') incrementStretch(stretch, shift, day)
+  else if (mode === 'shift') incrementShift(shift, day, count)
 }
