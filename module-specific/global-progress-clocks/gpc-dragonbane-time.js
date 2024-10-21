@@ -116,7 +116,9 @@ const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
 
 const mode = scope.mode
+const count = scope.count
+console.log(count)
 
 if (stretch && shift && day) {
-  if (mode === 'tickStretch') incrementStretch(stretch, shift, day)
+  if (mode === 'stretch') incrementStretch(stretch, shift, day)
 }
