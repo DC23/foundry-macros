@@ -116,7 +116,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     const currentTime = {
       stretch: stretch.value - 1,
       shift: shift.value - 1,
-      day: day.value - 1
+      day: day ? day.value - 1 : 0 // day is an optional clock. If it's missing, then it's always the first day
     }
     currentTime.totalStretches =
       currentTime.stretch +
@@ -147,7 +147,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     // set the new time, noting that we convert back to 1-based from our 0-based calculations
     setClock(stretch, newTime.stretch + 1)
     setClock(shift, newTime.shift + 1)
-    setClock(day, newTime.day + 1)
+    if (day) setClock(day, newTime.day + 1)
   }
 }
 
@@ -155,7 +155,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const hours = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
-const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
+const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS, true)
 
 console.log(hours)
 
@@ -164,7 +164,7 @@ const mode = scope.mode
 const count = scope.count
 
 // if we have valid clocks, then dispatch to the correct handler
-if (stretch && shift && day) {
+if (stretch && shift) {
   // It's a switch because I used to have more options, but they've been deprecated by the new increment
   // code that handles arbitrary leaps in time.
   // Keeping the switch since I might want more options in future.
