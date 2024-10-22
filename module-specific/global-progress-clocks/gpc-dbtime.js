@@ -120,8 +120,6 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
 */
   // FIXME: should be > 0 once I finish testing
   if (increment >= 0) {
-    console.log(`Incrementing time by ${increment} stretches`)
-
     // get the current time in stretches, noting the conversion from 1-based to 0-based
     const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
     const currentTime = {
@@ -141,9 +139,9 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
       currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
     }
 
-    console.log(
-      `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.hour}.${currentTime.stretch} (${currentTime.totalStretches})`
-    )
+    // console.log(
+    //   `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.hour}.${currentTime.stretch} (${currentTime.totalStretches})`
+    // )
 
     // Add the increment then factor back into days, shifts, hours, & stretches
     // to get the new time
@@ -169,9 +167,9 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     // This is the final remainder of stretches regardless of whether the optional hours are in use or not
     newTime.stretch = remainingStretches
 
-    console.log(
-      `New time: ${newTime.day}.${newTime.shift}.${newTime.hour}.${newTime.stretch} (${newTime.totalStretches})`
-    )
+    // console.log(
+    //   `New time: ${newTime.day}.${newTime.shift}.${newTime.hour}.${newTime.stretch} (${newTime.totalStretches})`
+    // )
 
     // set the new time, noting that we convert back to 1-based from our 0-based calculations
     setClock(stretch, newTime.stretch + 1)
