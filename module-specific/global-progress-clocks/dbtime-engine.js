@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.22
+Version 1.23
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -32,12 +32,11 @@ const DAY_CLOCK_NAME = 'Day'
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
 
 // Define the association between clock names and the clock update macro names
-const CLOCK_UPDATE_MACRO_NAMES = {
-  STRETCH_CLOCK_NAME: 'dbtime-stretch-change',
-  HOUR_CLOCK_NAME: 'dbtime-hour-change',
-  SHIFT_CLOCK_NAME: 'dbtime-shift-change',
-  DAY_CLOCK_NAME: 'dbtime-day-change'
-}
+const CLOCK_UPDATE_MACRO_NAMES = {}
+CLOCK_UPDATE_MACRO_NAMES[STRETCH_CLOCK_NAME] = 'dbtime-stretch-change'
+CLOCK_UPDATE_MACRO_NAMES[HOUR_CLOCK_NAME] = 'dbtime-hour-change'
+CLOCK_UPDATE_MACRO_NAMES[SHIFT_CLOCK_NAME] = 'dbtime-shift-change'
+CLOCK_UPDATE_MACRO_NAMES[DAY_CLOCK_NAME] = 'dbtime-day-change'
 
 /**
  * Validates a Global Progress Clock clock.
@@ -101,6 +100,12 @@ function setClock (clock, value = 1) {
   if (clock.value != value) {
     console.log(`DBTime: ${clock.name}: ${clock.value} -> ${value}`)
     window.clockDatabase.update({ id: clock.id, value })
+
+    // ding the change script
+    const changeMacro = game.macros.getName(
+      CLOCK_UPDATE_MACRO_NAMES[clock.name]
+    )
+    if (changeMacro) changeMacro.execute()
   }
 }
 
