@@ -78,11 +78,21 @@ function getValidClock (name, segments, optional = false) {
   return clock
 }
 
+/**
+ * Set a value into a clock.
+ *
+ * If the value being set is different to the current clock value, then
+ * 1. the new value will be set
+ * 2. the corresponding time update macro will be called
+ *
+ * @param {Object} clock The GPC clock to set
+ * @param {Number} value The value to set
+ */
 function setClock (clock, value = 1) {
-  window.clockDatabase.update({
-    id: clock.id,
-    value: Math.max(1, Math.min(clock.max, value))
-  })
+  value = Math.max(1, Math.min(clock.max, value))
+  if (clock.value != value) {
+    window.clockDatabase.update({ id: clock.id, value })
+  }
 }
 
 /**
