@@ -19,7 +19,7 @@ const STRETCHES_PER_HOUR = 4
 const STRETCH_CLOCK_NAME = 'Stretch'
 
 const HOURS_PER_SHIFT = 6
-const HOURS_CLOCK_NAME = 'Hour'
+const HOUR_CLOCK_NAME = 'Hour'
 
 const SHIFTS_PER_DAY = 4
 const SHIFT_CLOCK_NAME = 'Shift'
@@ -30,6 +30,14 @@ const DAY_CLOCK_SEGMENTS = 30
 const DAY_CLOCK_NAME = 'Day'
 
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
+
+// Define the association between clock names and the clock update macro names
+const CLOCK_UPDATE_MACRO_NAMES = {
+  STRETCH_CLOCK_NAME: 'dbtime-stretch-change',
+  HOUR_CLOCK_NAME: 'dbtime-hour-change',
+  SHIFT_CLOCK_NAME: 'dbtime-shift-change',
+  DAY_CLOCK_NAME: 'dbtime-day-change'
+}
 
 /**
  * Validates a Global Progress Clock clock.
@@ -91,6 +99,7 @@ function getValidClock (name, segments, optional = false) {
 function setClock (clock, value = 1) {
   value = Math.max(1, Math.min(clock.max, value))
   if (clock.value != value) {
+    console.log(`DBTime: ${clock.name}: ${clock.value} -> ${value}`)
     window.clockDatabase.update({ id: clock.id, value })
   }
 }
@@ -191,7 +200,7 @@ function setAllClocks (scope, stretch, hour, shift, day) {
  */
 // Get the optional hour clock first, so we can use its absence or presence to
 // validate the stretch clock
-const hour = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
+const hour = getValidClock(HOUR_CLOCK_NAME, HOURS_PER_SHIFT, true)
 
 // The number of segments in the stretch clock varies based on whether the optional
 // hour clock sits in between the stretch and shift clocks.
