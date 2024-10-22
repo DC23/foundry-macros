@@ -17,8 +17,13 @@ Version 1.14
  */
 // 24 is the Dragonbane standard. You can set this smaller if you want less fine-grained tracking
 // FIXME: revert to 24 before release. 4 is a test value
+// TODO: when I implement #8, I will be calculating the sequence stretch->hour->shift->day all the time
 const STRETCHES_PER_SHIFT = 4
+const STRETCHES_PER_HOUR = 4
 const STRETCH_CLOCK_NAME = 'Stretch'
+
+const HOURS_PER_SHIFT = 6
+const HOURS_CLOCK_NAME = 'Hours'
 
 const SHIFTS_PER_DAY = 4
 const SHIFT_CLOCK_NAME = 'Shift'
@@ -38,10 +43,11 @@ const DAY_CLOCK_NAME = 'Day'
  * @param {String} name The clock name.
  * @param {Number} segments The expected number of segments.
  */
-function validate_clock (clock, name, segments) {
-  if (!clock) throw new Error(`DBTime: Global Progress Clock '${name}' missing`)
+function validate_clock (clock, name, segments, optional = false) {
+  if (!optional && !clock)
+    throw new Error(`DBTime: Global Progress Clock '${name}' missing`)
 
-  if (clock.max != segments)
+  if (clock && clock.max != segments)
     throw new Error(
       `DBTime: Global Progress Clock '${name}' has ${clock.max} segments, it requires ${segments}`
     )
@@ -74,6 +80,27 @@ function getValidClock (name, segments) {
   return clock
 }
 
+function getOptionalClock (name, segments) {
+  var clock = null
+  try {
+    clock = window.clockDatabase.getName(name)
+  } catch (error) {
+    ui.notifications.error(
+      'The Global Progress Clocks module is probably not loaded'
+    )
+    return null
+  }
+
+  try {
+    validate_clock(clock, name, segments, true)
+  } catch (error) {
+    ui.notifications.error(error)
+    return null
+  }
+
+  return clock
+}
+
 function setClock (clock, value = 1) {
   window.clockDatabase.update({ id: clock.id, value: value })
 }
@@ -86,7 +113,6 @@ function setClock (clock, value = 1) {
  * @param {Object} day the day clock
  */
 function increment (increment, stretch, shift, day) {
-
   /*
 There's a mismatch between GPC clocks and how I want to use them. A GPC clock with N segments has N+1
 display states, corresponding to 0 filled segments through to N filled segments. With this system, I'm
@@ -148,7 +174,10 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
 // Get the clocks
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
+const hours = getOptionalClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
+
+console.log(hours)
 
 // get the macro arguments
 const mode = scope.mode
@@ -157,7 +186,7 @@ const count = scope.count
 // if we have valid clocks, then dispatch to the correct handler
 if (stretch && shift && day) {
   // It's a switch because I used to have more options, but they've been deprecated by the new increment
-  // code that handles arbitrary leaps in time. 
+  // code that handles arbitrary leaps in time.
   // Keeping the switch since I might want more options in future.
   // Code smells be damned!
   switch (mode) {
