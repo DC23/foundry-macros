@@ -114,9 +114,9 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     // get the current time in stretches, noting the conversion from 1-based to 0-based
     const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
     const currentTime = {
-      stretch: stretch.value - 1,
-      shift: shift.value - 1,
-      day: day ? day.value - 1 : 0 // day is an optional clock. If it's missing, then it's always the first day
+      stretch: Math.max(stretch.value, 1) - 1,
+      shift: Math.max(shift.value, 1) - 1,
+      day: day ? Math.max(day.value, 1) - 1 : 0 // day is an optional clock. If it's missing, then it's always the first day
     }
     currentTime.totalStretches =
       currentTime.stretch +
