@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.21
+Version 1.22
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -79,7 +79,10 @@ function getValidClock (name, segments, optional = false) {
 }
 
 function setClock (clock, value = 1) {
-  window.clockDatabase.update({ id: clock.id, value: value })
+  window.clockDatabase.update({
+    id: clock.id,
+    value: Math.max(1, Math.min(clock.max, value))
+  })
 }
 
 /**
@@ -168,6 +171,13 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
   }
 }
 
+function setAllClocks (scope, stretch, hour, shift, day) {
+  if (scope.stretch) setClock(stretch, scope.stretch)
+  if (scope.shift) setClock(shift, scope.shift)
+  if (hour && scope.hour) setClock(hour, scope.hour)
+  if (day && scope.day) setClock(day, scope.day)
+}
+
 /**
  * This is where the script first starts to do some work
  */
@@ -191,12 +201,12 @@ const count = scope.count
 
 // if we have the essential clocks, then dispatch to the correct handler
 if (stretch && shift) {
-  // It's a switch because I used to have more options, but they've been
-  // deprecated by the new increment code that handles arbitrary leaps in time.
-  // Keeping the switch since I might want more options in future.
-  // Code smells be damned!
   switch (mode) {
     case 'increment':
       increment(count, stretch, hour, shift, day)
+      break
+    case 'set':
+      setAllClocks(scope, stretch, hour, shift, day)
+      break
   }
 }
