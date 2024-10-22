@@ -9,30 +9,27 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.19
+Version 1.20
 */
 
-/**
- * Customisable bits and pieces go here
- */
-// 24 is the Dragonbane standard. You can set this smaller if you want less fine-grained tracking
-// FIXME: revert to 24 before release. 4 is a test value
-// TODO: when I implement #8, I will be calculating the sequence stretch->hour->shift->day all the time
-const STRETCHES_PER_SHIFT = 24
-const STRETCHES_PER_HOUR = 4  // only used when a hour clock is present
+// 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
+// Since the hour clock is optional, just leave it out and when using this script you'll never notice that
+// hours are even calculated.
+const STRETCHES_PER_HOUR = 4
 const STRETCH_CLOCK_NAME = 'Stretch'
 
 const HOURS_PER_SHIFT = 6
-const HOURS_CLOCK_NAME = 'Hours'
+const HOURS_CLOCK_NAME = 'Hour'
 
 const SHIFTS_PER_DAY = 4
 const SHIFT_CLOCK_NAME = 'Shift'
 
 // This does the same thing as the SHIFTS_PER_DAY and STRETCHES_PER_DAY, but since I don't have a larger clock
 // it's not days per anything.
-// FIXME: revert to 30 before release. 7 is a test value
-const DAY_CLOCK_SEGMENTS = 7
+const DAY_CLOCK_SEGMENTS = 30
 const DAY_CLOCK_NAME = 'Day'
+
+const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
 
 /**
  * Validates a Global Progress Clock clock.
@@ -89,10 +86,11 @@ function setClock (clock, value = 1) {
  *
  * @param {Number} stretchCount the number of stretches to increment
  * @param {Object} stretch the stretch clock
+ * @param {Object} hour the optional hour clock
  * @param {Object} shift the shift clock
- * @param {Object} day the day clock
+ * @param {Object} day the optional day clock
  */
-function increment (increment, stretch, shift, day) {
+function increment (increment, stretch, hour, shift, day) {
   /*
 There's a mismatch between GPC clocks and how I want to use them. A GPC clock with N segments has N+1
 display states, corresponding to 0 filled segments through to N filled segments. With this system, I'm
@@ -118,57 +116,87 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
       shift: Math.max(shift.value, 1) - 1,
       day: day ? Math.max(day.value, 1) - 1 : 0 // day is an optional clock. If it's missing, then it's always the first day
     }
+
     currentTime.totalStretches =
       currentTime.stretch +
       currentTime.shift * STRETCHES_PER_SHIFT +
       currentTime.day * STRETCHES_PER_DAY
+
+    // If we have an hour clock then the calculations need to take that into account
+    if (hour) {
+      currentTime.hour = Math.max(hour.value, 1) - 1
+      currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
+    }
+
     console.log(
-      `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.stretch} (${currentTime.totalStretches})`
+      `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.hour}.${currentTime.stretch} (${currentTime.totalStretches})`
     )
 
-    // Add the increment then factor back into days, shifts, & stretches to get the new time
-    // in the same format
+    // Add the increment then factor back into days, shifts, hours, & stretches
+    // to get the new time
     const newTime = {
       stretch: 0,
+      hour: 0,
       shift: 0,
       day: 0,
       totalStretches: increment + currentTime.totalStretches
     }
     var remainingStretches = newTime.totalStretches
+    // how many days?
     newTime.day = Math.floor(remainingStretches / STRETCHES_PER_DAY)
     remainingStretches = remainingStretches % STRETCHES_PER_DAY
+    // how many shifts?
     newTime.shift = Math.floor(remainingStretches / STRETCHES_PER_SHIFT)
     remainingStretches = remainingStretches % STRETCHES_PER_SHIFT
+    // if we are using hours, then calculate how many whole hours we have
+    if (hour) {
+      newTime.hour = Math.floor(remainingStretches / STRETCHES_PER_HOUR)
+      remainingStretches = remainingStretches % STRETCHES_PER_HOUR
+    }
+    // This is the final remainder of stretches regardless of whether the optional hours are in use or not
     newTime.stretch = remainingStretches
+
     console.log(
-      `New time: ${newTime.day}.${newTime.shift}.${newTime.stretch} (${newTime.totalStretches})`
+      `New time: ${newTime.day}.${newTime.shift}.${newTime.hour}.${newTime.stretch} (${newTime.totalStretches})`
     )
 
     // set the new time, noting that we convert back to 1-based from our 0-based calculations
     setClock(stretch, newTime.stretch + 1)
     setClock(shift, newTime.shift + 1)
+    if (hour) setClock(hour, newTime.hour + 1)
     if (day) setClock(day, newTime.day + 1)
   }
 }
 
-// Get the clocks
-const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
+/**
+ * This is where the script first starts to do some work
+ */
+// Get the optional hour clock first, so we can use its absence or presence to
+// validate the stretch clock
+const hour = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
+
+// The number of segments in the stretch clock varies based on whether the optional
+// hour clock sits in between the stretch and shift clocks.
+const stretch = getValidClock(
+  STRETCH_CLOCK_NAME,
+  hour ? STRETCHES_PER_HOUR : STRETCHES_PER_SHIFT
+)
+
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
-const hours = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS, true)
 
 // get the macro arguments
 const mode = scope.mode
 const count = scope.count
 
-// if we have valid clocks, then dispatch to the correct handler
+// if we have the essential clocks, then dispatch to the correct handler
 if (stretch && shift) {
-  // It's a switch because I used to have more options, but they've been deprecated by the new increment
-  // code that handles arbitrary leaps in time.
+  // It's a switch because I used to have more options, but they've been
+  // deprecated by the new increment code that handles arbitrary leaps in time.
   // Keeping the switch since I might want more options in future.
   // Code smells be damned!
   switch (mode) {
     case 'increment':
-      increment(count, stretch, shift, day)
+      increment(count, stretch, hour, shift, day)
   }
 }
