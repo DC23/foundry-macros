@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.14
+Version 1.19
 */
 
 /**
@@ -18,8 +18,8 @@ Version 1.14
 // 24 is the Dragonbane standard. You can set this smaller if you want less fine-grained tracking
 // FIXME: revert to 24 before release. 4 is a test value
 // TODO: when I implement #8, I will be calculating the sequence stretch->hour->shift->day all the time
-const STRETCHES_PER_SHIFT = 4
-const STRETCHES_PER_HOUR = 4
+const STRETCHES_PER_SHIFT = 24
+const STRETCHES_PER_HOUR = 4  // only used when a hour clock is present
 const STRETCH_CLOCK_NAME = 'Stretch'
 
 const HOURS_PER_SHIFT = 6
@@ -137,8 +137,8 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     var remainingStretches = newTime.totalStretches
     newTime.day = Math.floor(remainingStretches / STRETCHES_PER_DAY)
     remainingStretches = remainingStretches % STRETCHES_PER_DAY
-    newTime.shift = Math.floor(remainingStretches / SHIFTS_PER_DAY)
-    remainingStretches = remainingStretches % SHIFTS_PER_DAY
+    newTime.shift = Math.floor(remainingStretches / STRETCHES_PER_SHIFT)
+    remainingStretches = remainingStretches % STRETCHES_PER_SHIFT
     newTime.stretch = remainingStretches
     console.log(
       `New time: ${newTime.day}.${newTime.shift}.${newTime.stretch} (${newTime.totalStretches})`
@@ -156,8 +156,6 @@ const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
 const hours = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS, true)
-
-console.log(hours)
 
 // get the macro arguments
 const mode = scope.mode
