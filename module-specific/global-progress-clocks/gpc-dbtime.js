@@ -57,9 +57,10 @@ function validate_clock (clock, name, segments, optional = false) {
  * Gets a validated timekeeping progress clock by name.
  * @param {String} name
  * @param {Number} segments
+ * @param {Boolean} optional An optional clock will return null if it is missing, while a required clock will raise an exception if missing.
  * @returns The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
  */
-function getValidClock (name, segments) {
+function getValidClock (name, segments, optional = false) {
   var clock = null
   try {
     clock = window.clockDatabase.getName(name)
@@ -71,28 +72,7 @@ function getValidClock (name, segments) {
   }
 
   try {
-    validate_clock(clock, name, segments)
-  } catch (error) {
-    ui.notifications.error(error)
-    return null
-  }
-
-  return clock
-}
-
-function getOptionalClock (name, segments) {
-  var clock = null
-  try {
-    clock = window.clockDatabase.getName(name)
-  } catch (error) {
-    ui.notifications.error(
-      'The Global Progress Clocks module is probably not loaded'
-    )
-    return null
-  }
-
-  try {
-    validate_clock(clock, name, segments, true)
+    validate_clock(clock, name, segments, optional)
   } catch (error) {
     ui.notifications.error(error)
     return null
@@ -174,7 +154,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
 // Get the clocks
 const stretch = getValidClock(STRETCH_CLOCK_NAME, STRETCHES_PER_SHIFT)
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
-const hours = getOptionalClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT)
+const hours = getValidClock(HOURS_CLOCK_NAME, HOURS_PER_SHIFT, true)
 const day = getValidClock(DAY_CLOCK_NAME, DAY_CLOCK_SEGMENTS)
 
 console.log(hours)
