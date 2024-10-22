@@ -7,8 +7,8 @@ by 1 stretch, a shift (24 stretches), half a shift (12 stretches), or
 whatever amount you want.
 
 Foundry v12
-Version 1.0
+Version 1.1
 */
 
-const macro = game.macros.getName('gpc-dbtime')
+const macro = game.macros.getName('dbtime-engine')
 await macro.execute({ mode: 'increment', count: 1 })
