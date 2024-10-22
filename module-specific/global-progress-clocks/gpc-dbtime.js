@@ -123,7 +123,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
       currentTime.shift * STRETCHES_PER_SHIFT +
       currentTime.day * STRETCHES_PER_DAY
     console.log(
-      `Current time: ${currentTime.stretch}.${currentTime.shift}.${currentTime.day} (${currentTime.totalStretches})`
+      `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.stretch} (${currentTime.totalStretches})`
     )
 
     // Add the increment then factor back into days, shifts, & stretches to get the new time
@@ -141,7 +141,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     remainingStretches = remainingStretches % SHIFTS_PER_DAY
     newTime.stretch = remainingStretches
     console.log(
-      `New time: ${newTime.stretch}.${newTime.shift}.${newTime.day} (${newTime.totalStretches})`
+      `New time: ${newTime.day}.${newTime.shift}.${newTime.stretch} (${newTime.totalStretches})`
     )
 
     // set the new time, noting that we convert back to 1-based from our 0-based calculations
