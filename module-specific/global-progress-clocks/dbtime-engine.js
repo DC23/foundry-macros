@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.33
+Version 1.34
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -206,7 +206,7 @@ and the last has value 4, which is the range [1..4].
 Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer arithmetic much simpler.
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
 */
-    console.group('increment')
+    console.groupCollapsed('increment')
     // FIXME: should be > 0 once I finish testing
     if (increment >= 0) {
         const currentTime = getCurrentTime(stretch, hour, shift, day)
@@ -264,7 +264,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
  * @param {Object} day The optional day clock. If null, this clock will be ignored.
  */
 async function setAllClocks (scope, stretch, hour, shift, day) {
-    console.group('setAllClocks')
+    console.groupCollapsed('setAllClocks')
 
     const oldTime = getCurrentTime(stretch, hour, shift, day)
     calculateTimeOfDay(oldTime)
@@ -298,12 +298,23 @@ async function setAllClocks (scope, stretch, hour, shift, day) {
     console.groupEnd()
 }
 
+async function tellTime (stretch, hour, shift, day, includeDay) {
+    const time = getCurrentTime(stretch, hour, shift, day)
+    calculateTimeOfDay(time)
+    let content = `It's ${time.time}`
+    if (includeDay) content += ` on day ${time.day + 1}` // display in 1-based days
+    ChatMessage.create({
+        speaker: { actor: game.user.id },
+        content: content,
+    })
+}
+
 /**
  * This is where the script first starts to do some work
  */
 // Get the optional hour clock first, so we can use its absence or presence to
 // validate the stretch clock
-console.group('DBTime')
+console.groupCollapsed('DBTime')
 const hour = getValidClock(HOUR_CLOCK_NAME, HOURS_PER_SHIFT, true)
 
 // The number of segments in the stretch clock varies based on whether the optional
@@ -328,6 +339,9 @@ if (stretch && shift) {
             break
         case 'set':
             await setAllClocks(scope, stretch, hour, shift, day)
+            break
+        case 'tell':
+            await tellTime(stretch, hour, shift, day, scope.includeDay)
             break
     }
 }

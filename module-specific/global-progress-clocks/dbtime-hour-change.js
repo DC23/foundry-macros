@@ -8,4 +8,3 @@ This macro is called when the hour changes.
 Foundry v12
 Version 1.0
 */
-console.log('hour change')
