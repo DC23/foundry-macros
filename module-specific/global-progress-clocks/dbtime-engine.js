@@ -189,7 +189,6 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
         // to get the new time
         const newTime = {
             stretch: 0,
-            hour: 0,
             shift: 0,
             day: 0,
             totalStretches: increment + currentTime.totalStretches,
