@@ -171,13 +171,15 @@ function calculateTimeOfDay (time) {
     if (time.hour) minutesSinceSixAM += time.hour * 60
 
     // factor into hours and minutes
-    const hours = Math.floor(minutesSinceSixAM / 60) + 6
+    let hours = Math.floor(minutesSinceSixAM / 60) + 6
     const minutes = minutesSinceSixAM % 60
 
-    // TODO: AM and PM, and after midnight wrapping
-    // TODO: justify minutes
+    // AM and PM, and after midnight wrapping
+    const amPm = hours < 12 || hours >= 24 ? 'AM' : 'PM'
+    if (hours > 24) hours -= 24
+    if (hours >= 13) hours -= 12
 
-    time.time = `${hours}:${minutes.toString().padStart(2, '0')}`
+    time.time = `${hours}:${minutes.toString().padStart(2, '0')} ${amPm}`
 }
 
 /**
