@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.30
+Version 1.33
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -30,7 +30,9 @@ const DAY_CLOCK_SEGMENTS = 30
 const DAY_CLOCK_NAME = 'Day'
 
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
-const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
+const STRETCHES_PER_DAY = STRETCHES_PER_HOUR * HOURS_PER_SHIFT * SHIFTS_PER_DAY
+const MINUTES_PER_DAY = 1440
+const MINUTES_PER_STRETCH = MINUTES_PER_DAY / STRETCHES_PER_DAY
 
 // Define the association between clock names and the clock update macro names
 const CLOCK_UPDATE_MACRO_NAMES = {}
@@ -99,7 +101,11 @@ async function callChangeMacro (name, oldTime, newTime) {
     // TODO: data objects to pass into the change macros: current time, previous time
     const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
     if (changeMacro)
-        await changeMacro.execute({ oldTime: oldTime, newTime: newTime })
+        await changeMacro.execute({
+            oldTime: oldTime,
+            newTime: newTime,
+            minutesPerStretch: MINUTES_PER_STRETCH,
+        })
 }
 
 /**
@@ -156,6 +162,26 @@ function getCurrentTime (stretch, hour, shift, day) {
     return currentTime
 }
 
+function calculateTimeOfDay (time) {
+    // Each day starts at 6am with shift 0.
+    let minutesSinceSixAM =
+        time.stretch * MINUTES_PER_STRETCH +
+        time.shift * MINUTES_PER_STRETCH * STRETCHES_PER_SHIFT
+    // handle optional hours
+    if (time.hour) minutesSinceSixAM += time.hour * 60
+
+    // factor into hours and minutes
+    let hours = Math.floor(minutesSinceSixAM / 60) + 6
+    const minutes = minutesSinceSixAM % 60
+
+    // AM and PM, and after midnight wrapping
+    const amPm = hours < 12 || hours >= 24 ? 'AM' : 'PM'
+    if (hours > 24) hours -= 24
+    if (hours >= 13) hours -= 12
+
+    time.time = `${hours}:${minutes.toString().padStart(2, '0')} ${amPm}`
+}
+
 /**
  * Increment the clocks by an arbitrary number of stretches
  *
@@ -184,6 +210,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     // FIXME: should be > 0 once I finish testing
     if (increment >= 0) {
         const currentTime = getCurrentTime(stretch, hour, shift, day)
+        calculateTimeOfDay(currentTime)
 
         // Add the increment then factor back into days, shifts, hours, & stretches
         // to get the new time
@@ -207,6 +234,8 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
         }
         // This is the final remainder of stretches regardless of whether the optional hours are in use or not
         newTime.stretch = remainingStretches
+
+        calculateTimeOfDay(newTime)
 
         console.log(
             'Time Increment: %d %s units',
@@ -236,8 +265,10 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
  */
 async function setAllClocks (scope, stretch, hour, shift, day) {
     console.group('setAllClocks')
-    let changes = 0 // count the number of actual clock changes
+
     const oldTime = getCurrentTime(stretch, hour, shift, day)
+    calculateTimeOfDay(oldTime)
+
     const newTime = {
         stretch: scope.stretch - 1,
         shift: scope.shift - 1,
@@ -252,7 +283,9 @@ async function setAllClocks (scope, stretch, hour, shift, day) {
         newTime.hour = scope.hour - 1
         newTime.totalStretches += newTime.hour * STRETCHES_PER_HOUR
     }
+    calculateTimeOfDay(newTime)
 
+    let changes = 0 // count the number of actual clock changes
     if (scope.stretch)
         changes += setClock(stretch, scope.stretch, oldTime, newTime)
     if (scope.shift) changes += setClock(shift, scope.shift, oldTime, newTime)
