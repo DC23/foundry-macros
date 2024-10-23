@@ -14,54 +14,54 @@ delete levels.INHERIT
 
 // Build the fields for the dialog
 const choices = Object.entries(levels).reduce((acc, [label, value]) => {
-  acc.push({ value, label: label.toLowerCase().capitalize() })
-  return acc
+    acc.push({ value, label: label.toLowerCase().capitalize() })
+    return acc
 }, [])
 const ownershipField = new NumberField({
-  label: 'Ownership level',
-  choices
+    label: 'Ownership level',
+    choices,
 }).toFormGroup({}, { name: 'ownership' }).outerHTML
 
 const uuidField = new DocumentUUIDField({
-  label: 'Folder'
+    label: 'Folder',
 }).toFormGroup({}, { name: 'uuid' }).outerHTML
 
 const recursiveField = new BooleanField({
-  label: 'Recursive'
+    label: 'Recursive',
 }).toFormGroup(
-  { rootId: 'world-ownership-recursive-check' },
-  { name: 'recursive', value: true }
+    { rootId: 'world-ownership-recursive-check' },
+    { name: 'recursive', value: true }
 ).outerHTML
 
 // now make the dialog with the above fields.
 const data = await DialogV2.prompt({
-  window: { title: 'Folder Ownership Management' },
-  position: { width: 400 },
-  content: ownershipField + uuidField + recursiveField,
-  ok: {
-    callback: (event, button) => new FormDataExtended(button.form).object
-  }
+    window: { title: 'Folder Ownership Management' },
+    position: { width: 400 },
+    content: ownershipField + uuidField + recursiveField,
+    ok: {
+        callback: (event, button) => new FormDataExtended(button.form).object,
+    },
 })
 
 // Update the permissions
 
 const mainFolder = await fromUuid(data.uuid)
 if (!(mainFolder instanceof Folder))
-  return ui.notifications.warn(
-    'Wrong document type provided. A folder was expected.'
-  )
+    return ui.notifications.warn(
+        'Wrong document type provided. A folder was expected.'
+    )
 
 // flatten all the folder contents into an array
 const docs = data.recursive
-  ? mainFolder.contents.concat(
-      mainFolder.getSubfolders(true).flatMap(e => e.contents)
-    )
-  : mainFolder.contents
+    ? mainFolder.contents.concat(
+          mainFolder.getSubfolders(true).flatMap(e => e.contents)
+      )
+    : mainFolder.contents
 
 // build a list of updates for updateDocuments
 const updates = docs.map(e => ({
-  _id: e.id,
-  'ownership.default': data.ownership
+    _id: e.id,
+    'ownership.default': data.ownership,
 }))
 
 // update everything everywhere all at once
@@ -69,7 +69,9 @@ await mainFolder.documentClass.updateDocuments(updates)
 
 // tell the user we're done
 ui.notifications.notify(
-  `${data.recursive ? 'Recursively setting' : 'Setting'} all items in folder '${
-    mainFolder.name
-  }' to ${choices[data.ownership].label}`
+    `${
+        data.recursive ? 'Recursively setting' : 'Setting'
+    } all items in folder '${mainFolder.name}' to ${
+        choices[data.ownership].label
+    }`
 )

@@ -51,13 +51,13 @@ CLOCK_UPDATE_MACRO_NAMES['time'] = 'dbtime-time-change'
  * @param {number} segments The expected number of segments.
  */
 function validate_clock (clock, name, segments, optional = false) {
-  if (!optional && !clock)
-    throw new Error(`DBTime: Global Progress Clock '${name}' missing`)
+    if (!optional && !clock)
+        throw new Error(`DBTime: Global Progress Clock '${name}' missing`)
 
-  if (clock && clock.max != segments)
-    throw new Error(
-      `DBTime: Global Progress Clock '${name}' has ${clock.max} segments, it requires ${segments}`
-    )
+    if (clock && clock.max != segments)
+        throw new Error(
+            `DBTime: Global Progress Clock '${name}' has ${clock.max} segments, it requires ${segments}`
+        )
 }
 
 /**
@@ -68,24 +68,24 @@ function validate_clock (clock, name, segments, optional = false) {
  * @returns {Object} The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
  */
 function getValidClock (name, segments, optional = false) {
-  var clock = null
-  try {
-    clock = window.clockDatabase.getName(name)
-  } catch (error) {
-    ui.notifications.error(
-      'The Global Progress Clocks module is probably not loaded'
-    )
-    return null
-  }
+    var clock = null
+    try {
+        clock = window.clockDatabase.getName(name)
+    } catch (error) {
+        ui.notifications.error(
+            'The Global Progress Clocks module is probably not loaded'
+        )
+        return null
+    }
 
-  try {
-    validate_clock(clock, name, segments, optional)
-  } catch (error) {
-    ui.notifications.error(error)
-    return null
-  }
+    try {
+        validate_clock(clock, name, segments, optional)
+    } catch (error) {
+        ui.notifications.error(error)
+        return null
+    }
 
-  return clock
+    return clock
 }
 
 /**
@@ -93,10 +93,10 @@ function getValidClock (name, segments, optional = false) {
  * @param {string} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
  */
 function callChangeMacro (name) {
-  // TODO: data objects to pass into the change macros: current time, previous time
-  // ding the change script
-  const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
-  if (changeMacro) changeMacro.execute()
+    // TODO: data objects to pass into the change macros: current time, previous time
+    // ding the change script
+    const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
+    if (changeMacro) changeMacro.execute()
 }
 
 /**
@@ -111,15 +111,15 @@ function callChangeMacro (name) {
  * @returns {number} 1 if the clock was changed, or 0 if it was unchanged.
  */
 function setClock (clock, value = 1) {
-  value = Math.max(1, Math.min(clock.max, value))
-  if (clock.value != value) {
-    console.log(`DBTime: ${clock.name}: ${clock.value} -> ${value}`)
-    window.clockDatabase.update({ id: clock.id, value })
-    callChangeMacro(clock.name)
-    return 1
-  }
+    value = Math.max(1, Math.min(clock.max, value))
+    if (clock.value != value) {
+        console.log(`DBTime: ${clock.name}: ${clock.value} -> ${value}`)
+        window.clockDatabase.update({ id: clock.id, value })
+        callChangeMacro(clock.name)
+        return 1
+    }
 
-  return 0
+    return 0
 }
 
 /**
@@ -131,7 +131,7 @@ function setClock (clock, value = 1) {
  * @param {Object} day the optional day clock
  */
 function increment (increment, stretch, hour, shift, day) {
-  /*
+    /*
 There's a mismatch between GPC clocks and how I want to use them. A GPC clock with N segments has N+1
 display states, corresponding to 0 filled segments through to N filled segments. With this system, I'm
 using an N segment clock to represent N units of time, not N+1. That's why a clock is never shown with 
@@ -145,66 +145,66 @@ and the last has value 4, which is the range [1..4].
 Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer arithmetic much simpler.
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
 */
-  // FIXME: should be > 0 once I finish testing
-  if (increment >= 0) {
-    // get the current time in stretches, noting the conversion from 1-based to 0-based
-    const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
-    const currentTime = {
-      stretch: Math.max(stretch.value, 1) - 1,
-      shift: Math.max(shift.value, 1) - 1,
-      day: day ? Math.max(day.value, 1) - 1 : 0 // day is an optional clock. If it's missing, then it's always the first day
+    // FIXME: should be > 0 once I finish testing
+    if (increment >= 0) {
+        // get the current time in stretches, noting the conversion from 1-based to 0-based
+        const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
+        const currentTime = {
+            stretch: Math.max(stretch.value, 1) - 1,
+            shift: Math.max(shift.value, 1) - 1,
+            day: day ? Math.max(day.value, 1) - 1 : 0, // day is an optional clock. If it's missing, then it's always the first day
+        }
+
+        currentTime.totalStretches =
+            currentTime.stretch +
+            currentTime.shift * STRETCHES_PER_SHIFT +
+            currentTime.day * STRETCHES_PER_DAY
+
+        // If we have an hour clock then the calculations need to take that into account
+        if (hour) {
+            currentTime.hour = Math.max(hour.value, 1) - 1
+            currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
+        }
+
+        // console.log(
+        //   `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.hour}.${currentTime.stretch} (${currentTime.totalStretches})`
+        // )
+
+        // Add the increment then factor back into days, shifts, hours, & stretches
+        // to get the new time
+        const newTime = {
+            stretch: 0,
+            hour: 0,
+            shift: 0,
+            day: 0,
+            totalStretches: increment + currentTime.totalStretches,
+        }
+        var remainingStretches = newTime.totalStretches
+        // how many days?
+        newTime.day = Math.floor(remainingStretches / STRETCHES_PER_DAY)
+        remainingStretches = remainingStretches % STRETCHES_PER_DAY
+        // how many shifts?
+        newTime.shift = Math.floor(remainingStretches / STRETCHES_PER_SHIFT)
+        remainingStretches = remainingStretches % STRETCHES_PER_SHIFT
+        // if we are using hours, then calculate how many whole hours we have
+        if (hour) {
+            newTime.hour = Math.floor(remainingStretches / STRETCHES_PER_HOUR)
+            remainingStretches = remainingStretches % STRETCHES_PER_HOUR
+        }
+        // This is the final remainder of stretches regardless of whether the optional hours are in use or not
+        newTime.stretch = remainingStretches
+
+        // console.log(
+        //   `New time: ${newTime.day}.${newTime.shift}.${newTime.hour}.${newTime.stretch} (${newTime.totalStretches})`
+        // )
+
+        // set the new time, noting that we convert back to 1-based from our 0-based calculations
+        setClock(stretch, newTime.stretch + 1)
+        setClock(shift, newTime.shift + 1)
+        if (hour) setClock(hour, newTime.hour + 1)
+        if (day) setClock(day, newTime.day + 1)
+        callChangeMacro('time')
     }
-
-    currentTime.totalStretches =
-      currentTime.stretch +
-      currentTime.shift * STRETCHES_PER_SHIFT +
-      currentTime.day * STRETCHES_PER_DAY
-
-    // If we have an hour clock then the calculations need to take that into account
-    if (hour) {
-      currentTime.hour = Math.max(hour.value, 1) - 1
-      currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
-    }
-
-    // console.log(
-    //   `Current time: ${currentTime.day}.${currentTime.shift}.${currentTime.hour}.${currentTime.stretch} (${currentTime.totalStretches})`
-    // )
-
-    // Add the increment then factor back into days, shifts, hours, & stretches
-    // to get the new time
-    const newTime = {
-      stretch: 0,
-      hour: 0,
-      shift: 0,
-      day: 0,
-      totalStretches: increment + currentTime.totalStretches
-    }
-    var remainingStretches = newTime.totalStretches
-    // how many days?
-    newTime.day = Math.floor(remainingStretches / STRETCHES_PER_DAY)
-    remainingStretches = remainingStretches % STRETCHES_PER_DAY
-    // how many shifts?
-    newTime.shift = Math.floor(remainingStretches / STRETCHES_PER_SHIFT)
-    remainingStretches = remainingStretches % STRETCHES_PER_SHIFT
-    // if we are using hours, then calculate how many whole hours we have
-    if (hour) {
-      newTime.hour = Math.floor(remainingStretches / STRETCHES_PER_HOUR)
-      remainingStretches = remainingStretches % STRETCHES_PER_HOUR
-    }
-    // This is the final remainder of stretches regardless of whether the optional hours are in use or not
-    newTime.stretch = remainingStretches
-
-    // console.log(
-    //   `New time: ${newTime.day}.${newTime.shift}.${newTime.hour}.${newTime.stretch} (${newTime.totalStretches})`
-    // )
-
-    // set the new time, noting that we convert back to 1-based from our 0-based calculations
-    setClock(stretch, newTime.stretch + 1)
-    setClock(shift, newTime.shift + 1)
-    if (hour) setClock(hour, newTime.hour + 1)
-    if (day) setClock(day, newTime.day + 1)
-    callChangeMacro('time')
-  }
 }
 
 /**
@@ -216,15 +216,15 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
  * @param {Object} day The optional day clock. If null, this clock will be ignored.
  */
 function setAllClocks (scope, stretch, hour, shift, day) {
-  // count the number of actual clock changes
-  let changes = 0
-  if (scope.stretch) changes += setClock(stretch, scope.stretch)
-  if (scope.shift) changes += setClock(shift, scope.shift)
-  if (hour && scope.hour) changes += setClock(hour, scope.hour)
-  if (day && scope.day) changes += setClock(day, scope.day)
+    // count the number of actual clock changes
+    let changes = 0
+    if (scope.stretch) changes += setClock(stretch, scope.stretch)
+    if (scope.shift) changes += setClock(shift, scope.shift)
+    if (hour && scope.hour) changes += setClock(hour, scope.hour)
+    if (day && scope.day) changes += setClock(day, scope.day)
 
-  // and only call the time changed macro if anything changed
-  if (changes) callChangeMacro('time')
+    // and only call the time changed macro if anything changed
+    if (changes) callChangeMacro('time')
 }
 
 /**
@@ -237,8 +237,8 @@ const hour = getValidClock(HOUR_CLOCK_NAME, HOURS_PER_SHIFT, true)
 // The number of segments in the stretch clock varies based on whether the optional
 // hour clock sits in between the stretch and shift clocks.
 const stretch = getValidClock(
-  STRETCH_CLOCK_NAME,
-  hour ? STRETCHES_PER_HOUR : STRETCHES_PER_SHIFT
+    STRETCH_CLOCK_NAME,
+    hour ? STRETCHES_PER_HOUR : STRETCHES_PER_SHIFT
 )
 
 const shift = getValidClock(SHIFT_CLOCK_NAME, SHIFTS_PER_DAY)
@@ -250,12 +250,12 @@ const count = scope.count
 
 // if we have the essential clocks, then dispatch to the correct handler
 if (stretch && shift) {
-  switch (mode) {
-    case 'increment':
-      increment(count, stretch, hour, shift, day)
-      break
-    case 'set':
-      setAllClocks(scope, stretch, hour, shift, day)
-      break
-  }
+    switch (mode) {
+        case 'increment':
+            increment(count, stretch, hour, shift, day)
+            break
+        case 'set':
+            setAllClocks(scope, stretch, hour, shift, day)
+            break
+    }
 }

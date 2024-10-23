@@ -15,12 +15,12 @@ Version 1.0
 const DEAD = CONFIG.specialStatusEffects.DEFEATED
 const LOOTABLE_FLAG = 'lootable'
 for (let token of canvas.tokens.controlled) {
-  if (!token.document.hasStatusEffect(DEAD)) {
-    // make em dead
-    token.actor.toggleStatusEffect(DEAD, { overlay: true })
-  } else if (!token.document.getFlag('world', LOOTABLE_FLAG)) {
-    // make em lootable
-    token.document.setFlag('world', LOOTABLE_FLAG, true)
-    game.itempiles.API.turnTokensIntoItemPiles(token)
-  }
+    if (!token.document.hasStatusEffect(DEAD)) {
+        // make em dead
+        token.actor.toggleStatusEffect(DEAD, { overlay: true })
+    } else if (!token.document.getFlag('world', LOOTABLE_FLAG)) {
+        // make em lootable
+        token.document.setFlag('world', LOOTABLE_FLAG, true)
+        game.itempiles.API.turnTokensIntoItemPiles(token)
+    }
 }
