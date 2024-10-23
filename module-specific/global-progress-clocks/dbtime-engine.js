@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.23
+Version 1.25
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -37,6 +37,9 @@ CLOCK_UPDATE_MACRO_NAMES[STRETCH_CLOCK_NAME] = 'dbtime-stretch-change'
 CLOCK_UPDATE_MACRO_NAMES[HOUR_CLOCK_NAME] = 'dbtime-hour-change'
 CLOCK_UPDATE_MACRO_NAMES[SHIFT_CLOCK_NAME] = 'dbtime-shift-change'
 CLOCK_UPDATE_MACRO_NAMES[DAY_CLOCK_NAME] = 'dbtime-day-change'
+
+// the macro called when the overall time has changed, independently of any specific clock
+CLOCK_UPDATE_MACRO_NAMES['time'] = 'dbtime-time-change'
 
 /**
  * Validates a Global Progress Clock clock.
@@ -86,6 +89,17 @@ function getValidClock (name, segments, optional = false) {
 }
 
 /**
+ *
+ * @param {String} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
+ */
+function callChangeMacro (name) {
+  // TODO: data objects to pass into the change macros: current time, previous time
+  // ding the change script
+  const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
+  if (changeMacro) changeMacro.execute()
+}
+
+/**
  * Set a value into a clock.
  *
  * If the value being set is different to the current clock value, then
@@ -94,19 +108,18 @@ function getValidClock (name, segments, optional = false) {
  *
  * @param {Object} clock The GPC clock to set
  * @param {Number} value The value to set
+ * @returns {Number} 1 if the clock was changed, or 0 if it was unchanged.
  */
 function setClock (clock, value = 1) {
   value = Math.max(1, Math.min(clock.max, value))
   if (clock.value != value) {
     console.log(`DBTime: ${clock.name}: ${clock.value} -> ${value}`)
     window.clockDatabase.update({ id: clock.id, value })
-
-    // ding the change script
-    const changeMacro = game.macros.getName(
-      CLOCK_UPDATE_MACRO_NAMES[clock.name]
-    )
-    if (changeMacro) changeMacro.execute()
+    callChangeMacro(clock.name)
+    return 1
   }
+
+  return 0
 }
 
 /**
@@ -190,14 +203,20 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     setClock(shift, newTime.shift + 1)
     if (hour) setClock(hour, newTime.hour + 1)
     if (day) setClock(day, newTime.day + 1)
+    callChangeMacro('time')
   }
 }
 
 function setAllClocks (scope, stretch, hour, shift, day) {
-  if (scope.stretch) setClock(stretch, scope.stretch)
-  if (scope.shift) setClock(shift, scope.shift)
-  if (hour && scope.hour) setClock(hour, scope.hour)
-  if (day && scope.day) setClock(day, scope.day)
+  // count the number of actual clock changes
+  let changes = 0
+  if (scope.stretch) changes += setClock(stretch, scope.stretch)
+  if (scope.shift) changes += setClock(shift, scope.shift)
+  if (hour && scope.hour) changes += setClock(hour, scope.hour)
+  if (day && scope.day) changes += setClock(day, scope.day)
+
+  // and only call the time changed macro if anything changed
+  if (changes) callChangeMacro('time')
 }
 
 /**
