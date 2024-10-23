@@ -8,4 +8,3 @@ This macro is called when the shift changes.
 Foundry v12
 Version 1.0
 */
-console.log('shift change')
