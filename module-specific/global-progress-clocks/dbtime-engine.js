@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.27
+Version 1.29
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -91,12 +91,14 @@ function getValidClock (name, segments, optional = false) {
 /**
  * Calls the change macro corresponding to a named clock.
  * @param {string} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
+ * @param {Object} oldTime The previous time data object
+ * @param {Object} newTime The new time data object
  */
-async function callChangeMacro (name) {
+async function callChangeMacro (name, oldTime, newTime) {
     // TODO: data objects to pass into the change macros: current time, previous time
-    // ding the change script
     const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
-    if (changeMacro) await changeMacro.execute()
+    if (changeMacro)
+        await changeMacro.execute({ oldTime: oldTime, newTime: newTime })
 }
 
 /**
@@ -108,14 +110,16 @@ async function callChangeMacro (name) {
  *
  * @param {Object} clock The GPC clock to set
  * @param {number} value The value to set
+ * @param {Object} oldTime The previous time data object
+ * @param {Object} newTime The new time data object
  * @returns {number} 1 if the clock was changed, or 0 if it was unchanged.
  */
-function setClock (clock, value = 1) {
+function setClock (clock, value, oldTime, newTime) {
     value = Math.max(1, Math.min(clock.max, value))
     if (clock.value != value) {
         //console.debug('%s: %d -> %d', clock.name, clock.value, value)
         window.clockDatabase.update({ id: clock.id, value })
-        callChangeMacro(clock.name)
+        callChangeMacro(clock.name, oldTime, newTime)
         return 1
     }
 
@@ -196,31 +200,15 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
             increment,
             STRETCH_CLOCK_NAME
         )
-        console.debug(
-            'Current time (day.shift.hour.stretch): %d.%d.%d.%d (%d)',
-            currentTime.day,
-            currentTime.shift,
-            currentTime.hour,
-            currentTime.stretch,
-            currentTime.totalStretches
-        )
-        console.debug(
-            'New time (day.shift.hour.stretch): %d.%d.%d.%d (%d)',
-            newTime.day,
-            newTime.shift,
-            newTime.hour,
-            newTime.stretch,
-            newTime.totalStretches
-        )
+        console.debug('Current time: %o', currentTime)
+        console.debug('New time: %o', newTime)
 
         // set the new time, noting that we convert back to 1-based from our 0-based calculations
-        console.group('Clock Setting')
-        setClock(stretch, newTime.stretch + 1)
-        setClock(shift, newTime.shift + 1)
-        if (hour) setClock(hour, newTime.hour + 1)
-        if (day) setClock(day, newTime.day + 1)
-        callChangeMacro('time')
-        console.groupEnd()
+        setClock(stretch, newTime.stretch + 1, currentTime, newTime)
+        setClock(shift, newTime.shift + 1, currentTime, newTime)
+        if (hour) setClock(hour, newTime.hour + 1, currentTime, newTime)
+        if (day) setClock(day, newTime.day + 1, currentTime, newTime)
+        callChangeMacro('time', currentTime, newTime)
     }
     console.groupEnd()
 }

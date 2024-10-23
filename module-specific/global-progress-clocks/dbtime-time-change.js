@@ -10,4 +10,6 @@ clocks have changed, this script is always called when the time is changed in an
 Foundry v12
 Version 1.0
 */
-console.log('time change')
+console.group('Time Change Macro')
+console.log('Scope: %o', scope)
+console.groupEnd()
