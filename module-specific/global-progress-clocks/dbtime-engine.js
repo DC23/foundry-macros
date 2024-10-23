@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.27
+Version 1.30
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -30,6 +30,7 @@ const DAY_CLOCK_SEGMENTS = 30
 const DAY_CLOCK_NAME = 'Day'
 
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
+const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
 
 // Define the association between clock names and the clock update macro names
 const CLOCK_UPDATE_MACRO_NAMES = {}
@@ -91,12 +92,14 @@ function getValidClock (name, segments, optional = false) {
 /**
  * Calls the change macro corresponding to a named clock.
  * @param {string} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
+ * @param {Object} oldTime The previous time data object
+ * @param {Object} newTime The new time data object
  */
-async function callChangeMacro (name) {
+async function callChangeMacro (name, oldTime, newTime) {
     // TODO: data objects to pass into the change macros: current time, previous time
-    // ding the change script
     const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
-    if (changeMacro) await changeMacro.execute()
+    if (changeMacro)
+        await changeMacro.execute({ oldTime: oldTime, newTime: newTime })
 }
 
 /**
@@ -108,14 +111,16 @@ async function callChangeMacro (name) {
  *
  * @param {Object} clock The GPC clock to set
  * @param {number} value The value to set
+ * @param {Object} oldTime The previous time data object
+ * @param {Object} newTime The new time data object
  * @returns {number} 1 if the clock was changed, or 0 if it was unchanged.
  */
-function setClock (clock, value = 1) {
+function setClock (clock, value, oldTime, newTime) {
     value = Math.max(1, Math.min(clock.max, value))
     if (clock.value != value) {
         //console.debug('%s: %d -> %d', clock.name, clock.value, value)
         window.clockDatabase.update({ id: clock.id, value })
-        callChangeMacro(clock.name)
+        callChangeMacro(clock.name, oldTime, newTime)
         return 1
     }
 
@@ -123,6 +128,36 @@ function setClock (clock, value = 1) {
 }
 
 /**
+ * Gets the current time as a 0-based data object
+ *
+ * @param {Object} stretch the stretch clock
+ * @param {Object} hour the optional hour clock
+ * @param {Object} shift the shift clock
+ * @param {Object} day the optional day clock
+ */
+function getCurrentTime (stretch, hour, shift, day) {
+    const currentTime = {
+        stretch: Math.max(stretch.value, 1) - 1,
+        shift: Math.max(shift.value, 1) - 1,
+        day: day ? Math.max(day.value, 1) - 1 : 0, // day is an optional clock. If it's missing, then it's always the first day
+    }
+
+    currentTime.totalStretches =
+        currentTime.stretch +
+        currentTime.shift * STRETCHES_PER_SHIFT +
+        currentTime.day * STRETCHES_PER_DAY
+
+    // If we have an hour clock then that must be taken into account
+    if (hour) {
+        currentTime.hour = Math.max(hour.value, 1) - 1
+        currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
+    }
+
+    return currentTime
+}
+
+/**
+ * Increment the clocks by an arbitrary number of stretches
  *
  * @param {number} stretchCount the number of stretches to increment
  * @param {Object} stretch the stretch clock
@@ -148,24 +183,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
     console.group('increment')
     // FIXME: should be > 0 once I finish testing
     if (increment >= 0) {
-        // get the current time in stretches, noting the conversion from 1-based to 0-based
-        const STRETCHES_PER_DAY = SHIFTS_PER_DAY * STRETCHES_PER_SHIFT
-        const currentTime = {
-            stretch: Math.max(stretch.value, 1) - 1,
-            shift: Math.max(shift.value, 1) - 1,
-            day: day ? Math.max(day.value, 1) - 1 : 0, // day is an optional clock. If it's missing, then it's always the first day
-        }
-
-        currentTime.totalStretches =
-            currentTime.stretch +
-            currentTime.shift * STRETCHES_PER_SHIFT +
-            currentTime.day * STRETCHES_PER_DAY
-
-        // If we have an hour clock then the calculations need to take that into account
-        if (hour) {
-            currentTime.hour = Math.max(hour.value, 1) - 1
-            currentTime.totalStretches += currentTime.hour * STRETCHES_PER_HOUR
-        }
+        const currentTime = getCurrentTime(stretch, hour, shift, day)
 
         // Add the increment then factor back into days, shifts, hours, & stretches
         // to get the new time
@@ -196,31 +214,15 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
             increment,
             STRETCH_CLOCK_NAME
         )
-        console.debug(
-            'Current time (day.shift.hour.stretch): %d.%d.%d.%d (%d)',
-            currentTime.day,
-            currentTime.shift,
-            currentTime.hour,
-            currentTime.stretch,
-            currentTime.totalStretches
-        )
-        console.debug(
-            'New time (day.shift.hour.stretch): %d.%d.%d.%d (%d)',
-            newTime.day,
-            newTime.shift,
-            newTime.hour,
-            newTime.stretch,
-            newTime.totalStretches
-        )
+        console.debug('Current time: %o', currentTime)
+        console.debug('New time: %o', newTime)
 
         // set the new time, noting that we convert back to 1-based from our 0-based calculations
-        console.group('Clock Setting')
-        setClock(stretch, newTime.stretch + 1)
-        setClock(shift, newTime.shift + 1)
-        if (hour) setClock(hour, newTime.hour + 1)
-        if (day) setClock(day, newTime.day + 1)
-        callChangeMacro('time')
-        console.groupEnd()
+        setClock(stretch, newTime.stretch + 1, currentTime, newTime)
+        setClock(shift, newTime.shift + 1, currentTime, newTime)
+        if (hour) setClock(hour, newTime.hour + 1, currentTime, newTime)
+        if (day) setClock(day, newTime.day + 1, currentTime, newTime)
+        callChangeMacro('time', currentTime, newTime)
     }
     console.groupEnd()
 }
@@ -233,17 +235,34 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
  * @param {Object} shift The shift clock
  * @param {Object} day The optional day clock. If null, this clock will be ignored.
  */
-function setAllClocks (scope, stretch, hour, shift, day) {
+async function setAllClocks (scope, stretch, hour, shift, day) {
     console.group('setAllClocks')
-    // count the number of actual clock changes
-    let changes = 0
-    if (scope.stretch) changes += setClock(stretch, scope.stretch)
-    if (scope.shift) changes += setClock(shift, scope.shift)
-    if (hour && scope.hour) changes += setClock(hour, scope.hour)
-    if (day && scope.day) changes += setClock(day, scope.day)
+    let changes = 0 // count the number of actual clock changes
+    const oldTime = getCurrentTime(stretch, hour, shift, day)
+    const newTime = {
+        stretch: scope.stretch - 1,
+        shift: scope.shift - 1,
+        day: scope.day ? scope.day - 1 : 0,
+        totalStretches: 0,
+    }
+    newTime.totalStretches =
+        newTime.stretch +
+        newTime.shift * STRETCHES_PER_SHIFT +
+        newTime.day * STRETCHES_PER_DAY
+    if (hour) {
+        newTime.hour = scope.hour - 1
+        newTime.totalStretches += newTime.hour * STRETCHES_PER_HOUR
+    }
+
+    if (scope.stretch)
+        changes += setClock(stretch, scope.stretch, oldTime, newTime)
+    if (scope.shift) changes += setClock(shift, scope.shift, oldTime, newTime)
+    if (hour && scope.hour)
+        changes += setClock(hour, scope.hour, oldTime, newTime)
+    if (day && scope.day) changes += setClock(day, scope.day, oldTime, newTime)
 
     // and only call the time changed macro if anything changed
-    if (changes) callChangeMacro('time')
+    if (changes) await callChangeMacro('time', oldTime, newTime)
     console.groupEnd()
 }
 
@@ -276,7 +295,7 @@ if (stretch && shift) {
             increment(count, stretch, hour, shift, day)
             break
         case 'set':
-            setAllClocks(scope, stretch, hour, shift, day)
+            await setAllClocks(scope, stretch, hour, shift, day)
             break
     }
 }
