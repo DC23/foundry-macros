@@ -47,8 +47,8 @@ CLOCK_UPDATE_MACRO_NAMES['time'] = 'dbtime-time-change'
  * that configuration is outside the control of the scripts, the least I can do is check
  * that it's right.
  * @param {Object} clock The clock to check.
- * @param {String} name The clock name.
- * @param {Number} segments The expected number of segments.
+ * @param {string} name The clock name.
+ * @param {number} segments The expected number of segments.
  */
 function validate_clock (clock, name, segments, optional = false) {
   if (!optional && !clock)
@@ -62,10 +62,10 @@ function validate_clock (clock, name, segments, optional = false) {
 
 /**
  * Gets a validated timekeeping progress clock by name.
- * @param {String} name
- * @param {Number} segments
- * @param {Boolean} optional An optional clock will return null if it is missing, while a required clock will raise an exception if missing.
- * @returns The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
+ * @param {string} name
+ * @param {number} segments
+ * @param {boolean} optional An optional clock will return null if it is missing, while a required clock will raise an exception if missing.
+ * @returns {Object} The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
  */
 function getValidClock (name, segments, optional = false) {
   var clock = null
@@ -89,8 +89,8 @@ function getValidClock (name, segments, optional = false) {
 }
 
 /**
- *
- * @param {String} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
+ * Calls the change macro corresponding to a named clock.
+ * @param {string} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
  */
 function callChangeMacro (name) {
   // TODO: data objects to pass into the change macros: current time, previous time
@@ -107,8 +107,8 @@ function callChangeMacro (name) {
  * 2. the corresponding time update macro will be called
  *
  * @param {Object} clock The GPC clock to set
- * @param {Number} value The value to set
- * @returns {Number} 1 if the clock was changed, or 0 if it was unchanged.
+ * @param {number} value The value to set
+ * @returns {number} 1 if the clock was changed, or 0 if it was unchanged.
  */
 function setClock (clock, value = 1) {
   value = Math.max(1, Math.min(clock.max, value))
@@ -124,7 +124,7 @@ function setClock (clock, value = 1) {
 
 /**
  *
- * @param {Number} stretchCount the number of stretches to increment
+ * @param {number} stretchCount the number of stretches to increment
  * @param {Object} stretch the stretch clock
  * @param {Object} hour the optional hour clock
  * @param {Object} shift the shift clock
@@ -207,6 +207,14 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
   }
 }
 
+/**
+ * Sets all clocks to the given values
+ * @param {Object} scope The scope object containing the named number values to set into the clocks.
+ * @param {Object} stretch The stretch clock
+ * @param {Object} hour The optional hour clock. If null, this clock will be ignored.
+ * @param {Object} shift The shift clock
+ * @param {Object} day The optional day clock. If null, this clock will be ignored.
+ */
 function setAllClocks (scope, stretch, hour, shift, day) {
   // count the number of actual clock changes
   let changes = 0
