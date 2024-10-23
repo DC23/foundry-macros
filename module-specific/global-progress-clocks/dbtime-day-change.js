@@ -8,3 +8,8 @@ This macro is called when the day changes.
 Foundry v12
 Version 1.0
 */
+
+ChatMessage.create({
+    speaker: { actor: game.user.id },
+    content: 'A new day dawns!',
+})

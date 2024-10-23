@@ -8,5 +8,7 @@ Foundry v12
 Version 1.0
 */
 
+// Don't try calling this from one of the dbtime-X-change handlers (dbtime-stretch-change etc)
+// as the internal data structures will likely be in an inconsistent state.
 const macro = game.macros.getName('dbtime-engine')
 await macro.execute({ mode: 'tell', includeDay: true })

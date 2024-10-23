@@ -16,6 +16,13 @@ Version 1.0
  * is in use.
  */
  if (scope.newTime.stretch % 4 === 0) {
+    // it's the start of a new hour
+
+    if (scope.newTime.stretch === 0 && scope.newTime.shift === 0) {
+        // special case: 6am, the start of a new day! If you want to mark the occasion, you can do it here
+        // you can also just use the dbtime-day-change macro :)
+    }
+
     // post the time to chat
     let content = `It's ${scope.newTime.time} on day ${scope.newTime.day + 1}` // display in 1-based days
     ChatMessage.create({
