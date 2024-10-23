@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.26
+Version 1.27
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -92,11 +92,11 @@ function getValidClock (name, segments, optional = false) {
  * Calls the change macro corresponding to a named clock.
  * @param {string} name the clock or change name. Must be a key in CLOCK_UPDATE_MACRO_NAMES
  */
-function callChangeMacro (name) {
+async function callChangeMacro (name) {
     // TODO: data objects to pass into the change macros: current time, previous time
     // ding the change script
     const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
-    if (changeMacro) changeMacro.execute()
+    if (changeMacro) await changeMacro.execute()
 }
 
 /**
