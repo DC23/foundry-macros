@@ -9,4 +9,3 @@ Foundry v12
 Version 1.0
 */
 console.log('day change')
-console.log(scope)

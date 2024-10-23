@@ -9,4 +9,3 @@ Foundry v12
 Version 1.0
 */
 console.log('hour change')
-console.log(scope)

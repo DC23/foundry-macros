@@ -113,7 +113,7 @@ function callChangeMacro (name) {
 function setClock (clock, value = 1) {
     value = Math.max(1, Math.min(clock.max, value))
     if (clock.value != value) {
-        console.debug('%s: %d -> %d', clock.name, clock.value, value)
+        //console.debug('%s: %d -> %d', clock.name, clock.value, value)
         window.clockDatabase.update({ id: clock.id, value })
         callChangeMacro(clock.name)
         return 1
@@ -214,11 +214,13 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
         )
 
         // set the new time, noting that we convert back to 1-based from our 0-based calculations
+        console.group('Clock Setting')
         setClock(stretch, newTime.stretch + 1)
         setClock(shift, newTime.shift + 1)
         if (hour) setClock(hour, newTime.hour + 1)
         if (day) setClock(day, newTime.day + 1)
         callChangeMacro('time')
+        console.groupEnd()
     }
     console.groupEnd()
 }
