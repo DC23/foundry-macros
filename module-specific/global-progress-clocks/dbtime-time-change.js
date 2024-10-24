@@ -35,6 +35,10 @@ if (scope.time.stretch % 4 === 0) {
 
 /**
  * Scene Lighting Automation
+ * 
+ * An example of how the time handling system can be used to drive more complex automations.
+ * Just delete this whole section if you don't want to automatically change scene 
+ * lighting based on the time of day.
  *
  * Shift 0 is 6am to 12pm
  * Shift 1 is 12pm to 6pm
