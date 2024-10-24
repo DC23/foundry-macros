@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.35
+Version 1.36
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -206,8 +206,7 @@ Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer ar
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
 */
     console.group('increment')
-    // FIXME: should be > 0 once I finish testing
-    if (increment >= 0) {
+    if (increment > 0) {
         const currentTime = getCurrentTime(stretch, hour, shift, day)
         calculateTimeOfDay(currentTime)
 
@@ -233,6 +232,15 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
         }
         // This is the final remainder of stretches regardless of whether the optional hours are in use or not
         newTime.stretch = remainingStretches
+
+        // Wrap the day counter when it hits the limit
+        // See issue #33
+        if (day && newTime.day >= day.max) {
+            ui.notifications.warn(
+                `DB Time: The day counter has hit the maximum of ${day.max}. Wrapping to day 1`
+            )
+            newTime.day = 0
+        }
 
         calculateTimeOfDay(newTime)
 
