@@ -66,7 +66,7 @@ function validate_clock (clock, name, segments, optional = false) {
 /**
  * Gets a validated timekeeping progress clock by name.
  * @param {string} name
- * @param {number} segments
+ * @param {number} segments The expected number of clock segments
  * @param {boolean} optional An optional clock will return null if it is missing, while a required clock will raise an exception if missing.
  * @returns {Object} The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
  */
@@ -302,7 +302,7 @@ async function tellTime (stretch, hour, shift, day, includeDay) {
     calculateTimeOfDay(time)
     let content = `It's ${time.time}`
     if (includeDay) content += ` on day ${time.day + 1}` // display in 1-based days
-    console.debug(content)
+    console.log(content)
     ChatMessage.create({
         speaker: { actor: game.user.id },
         content: content,
@@ -341,7 +341,7 @@ if (stretch && shift) {
             await setAllClocks(scope, stretch, hour, shift, day)
             break
         case 'tell':
-            await tellTime(stretch, hour, shift, day, scope.includeDay)
+            await tellTime(stretch, hour, shift, day, scope.includeDay && day)
             break
     }
 }
