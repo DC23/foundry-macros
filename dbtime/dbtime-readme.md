@@ -60,4 +60,4 @@ General points:
 - Make sure the macro names in Foundry are the same as the file names in the GitHub repository, but without the `.js` extension.
 - Open the [Foundry Macro Directory](https://foundryvtt.com/article/macros/) and create a new folder called `DB Time`. Unlike the macro names, this folder name doesn't matter.
 
-Now, one at a time, create script macros for every `.js` file in the [dbtime]() folder.
+Now, one at a time, create script macros for every `.js` file in the [dbtime](./) folder in the Foundry `DB Time` macro folder you just created. Be sure to give each one the correct name and to copy the raw text from GitHub.
