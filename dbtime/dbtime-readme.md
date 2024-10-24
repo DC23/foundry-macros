@@ -56,8 +56,14 @@ And don't worry if you get the clocks wrong. The script will complain if a clock
 
 General points:
 
-- Grabbing the raw macro text
-- Make sure the macro names in Foundry are the same as the file names in the GitHub repository, but without the `.js` extension.
+- How to copy the raw macro text
 - Open the [Foundry Macro Directory](https://foundryvtt.com/article/macros/) and create a new folder called `DB Time`. Unlike the macro names, this folder name doesn't matter.
 
-Now, one at a time, create script macros for every `.js` file in the [dbtime](./) folder in the Foundry `DB Time` macro folder you just created. Be sure to give each one the correct name and to copy the raw text from GitHub.
+Now, one at a time, create script macros for every `.js` file in the [dbtime](./) folder in the Foundry `DB Time` macro folder you just created. I'll explain each of the files briefly here, although they all have extensive comments as well.
+
+- [dbtime-engine](dbtime/dbtime-engine.js)
+This is the implementation of DB Time. You can poke around in here if you want to see all the terrible things I've done to make this work, but you don't need to tinker with this file to use DB Time. You just need to copy it over and call it `dbtime-engine`. This is important. Many of the other macros search for `dbtime-engine` by name, so don't call it anything else.
+- [dbtime-increment](dbtime/dbtime-increment.js) This one is simple. It calls the DB Time Engine and asks it to move the time forward by a number of stretches. You can create as many copies of this macro as you want, with different names that advance by different amounts of time. Inside the file I've given most of the common examples you might need. Set up the ones you want, give them memorable names, drag them to the macro toolbar, and that's your one-click button for controlling the time.
+- [dbtime-set](dbtime/dbtime-set.js) Sets the time to exactly what you ask for. As is, it's a reset. Setting all the values to 1 sets time back to the first stretch of the first shift of the first day. Again, you can have lots of these if you need to set the time to different things. Maybe one day I'll make a dialog to do the same thing.
+- [dbtime-tell-time](dbtime/dbtime-tell-time.js) Posts the current time of day in hours and minutes to chat.
+- [dbtime/time-change-macros](dbtime/time-change-macros/)
