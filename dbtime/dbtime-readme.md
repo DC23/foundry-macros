@@ -66,4 +66,4 @@ This is the implementation of DB Time. You can poke around in here if you want t
 - [dbtime-increment](./dbtime-increment.js) This one is simple. It calls the DB Time Engine and asks it to move the time forward by a number of stretches. You can create as many copies of this macro as you want, with different names that advance by different amounts of time. Inside the file I've given most of the common examples you might need. Set up the ones you want, give them memorable names, drag them to the macro toolbar, and that's your one-click button for controlling the time.
 - [dbtime-set](./dbtime-set.js) Sets the time to exactly what you ask for. As is, it's a reset. Setting all the values to 1 sets time back to the first stretch of the first shift of the first day. Again, you can have lots of these if you need to set the time to different things. Maybe one day I'll make a dialog to do the same thing.
 - [dbtime-tell-time](./dbtime-tell-time.js) Posts the current time of day in hours and minutes to chat.
-- [dbtime/time-change-macros](./time-change-macros/)
+- [dbtime/time-change-macros](./time-change-macros/) To do ...

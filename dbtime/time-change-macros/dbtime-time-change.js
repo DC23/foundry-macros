@@ -89,6 +89,10 @@ async function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
     )
 }
 
+/**
+ * While I love the interpolation idea I came up with, it breaks when an hour clock is present, since the pattern of stretches and shifts is different.
+ */
+
 if (scope.time.shift === 0 || scope.time.shift === 1) {
     // Is it dawn?
     if (
