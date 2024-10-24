@@ -98,7 +98,6 @@ function getValidClock (name, segments, optional = false) {
  * @param {Object} newTime The new time data object
  */
 async function callChangeMacro (name, oldTime, newTime) {
-    // TODO: data objects to pass into the change macros: current time, previous time
     const changeMacro = game.macros.getName(CLOCK_UPDATE_MACRO_NAMES[name])
     if (changeMacro)
         await changeMacro.execute({
