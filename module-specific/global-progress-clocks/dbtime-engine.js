@@ -205,7 +205,7 @@ and the last has value 4, which is the range [1..4].
 Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer arithmetic much simpler.
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
 */
-    console.groupCollapsed('increment')
+    console.group('increment')
     // FIXME: should be > 0 once I finish testing
     if (increment >= 0) {
         const currentTime = getCurrentTime(stretch, hour, shift, day)
@@ -263,7 +263,7 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
  * @param {Object} day The optional day clock. If null, this clock will be ignored.
  */
 async function setAllClocks (scope, stretch, hour, shift, day) {
-    console.groupCollapsed('setAllClocks')
+    console.group('setAllClocks')
 
     const oldTime = getCurrentTime(stretch, hour, shift, day)
     calculateTimeOfDay(oldTime)
@@ -302,6 +302,7 @@ async function tellTime (stretch, hour, shift, day, includeDay) {
     calculateTimeOfDay(time)
     let content = `It's ${time.time}`
     if (includeDay) content += ` on day ${time.day + 1}` // display in 1-based days
+    console.debug(content)
     ChatMessage.create({
         speaker: { actor: game.user.id },
         content: content,
@@ -313,7 +314,7 @@ async function tellTime (stretch, hour, shift, day, includeDay) {
  */
 // Get the optional hour clock first, so we can use its absence or presence to
 // validate the stretch clock
-console.groupCollapsed('DBTime')
+console.group('DBTime')
 const hour = getValidClock(HOUR_CLOCK_NAME, HOURS_PER_SHIFT, true)
 
 // The number of segments in the stretch clock varies based on whether the optional
