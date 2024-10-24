@@ -8,14 +8,15 @@ Unlike the stretch, hour, shift, and day change macros which are only called whe
 clocks have changed, this script is always called when the time is changed in any way.
 
 Foundry v12
-Version 1.0
+Version 1.1
 */
+
 /**
  * This code will execute whenever the time changes to an even hour, even if you don't have the optional Hour clock
  * enabled, while anything placed into dbtime-hour-change is only called when the Hour clock
  * is in use.
  */
- if (scope.newTime.stretch % 4 === 0) {
+if (scope.newTime.stretch % 4 === 0) {
     // it's the start of a new hour
 
     if (scope.newTime.stretch === 0 && scope.newTime.shift === 0) {
@@ -30,3 +31,28 @@ Version 1.0
         content: content,
     })
 }
+
+/**
+ * Scene Lighting Automation
+ *
+ * Dawn Sequence
+ *
+ * NIGHT_DARKNESS
+ *
+ * 6:00 am -> shift 0, stretch 0
+ * 6:15 am -> shift 0, stretch 1
+ * 6:30 am -> shift 0, stretch 2
+ * 6:45 am -> shift 0, stretch 3
+ * 7:00 am -> shift 0, stretch 4
+ *
+ * DAY_DARKNESS
+ *
+ * Sunset Sequence
+ * 6:00 pm -> shift 2, stretch 0
+ * 6:15 pm -> shift 2, stretch 1
+ * 6:30 pm -> shift 2, stretch 2
+ * 6:45 pm -> shift 2, stretch 3
+ * 7:00 pm -> shift 2, stretch 4
+ *
+ * NIGHT_DARKNESS
+ */
