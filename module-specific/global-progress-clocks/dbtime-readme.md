@@ -1,9 +1,27 @@
 # Dragonbane Timekeeping
 
-Overview
+***Dragonbane Timekeeping***, or ***DB Time*** for short, is a collection of script macros for the [Foundry VTT](https://foundryvtt.com/). It implements simple timekeeping for the [Dragonbane game system](https://foundryvtt.com/packages/dragonbane) on top of the [Global Progress Clocks](https://foundryvtt.com/packages/global-progress-clocks) module.
+
+These scripts have the following main features:
+
+- They track the time in stretches and shifts, and optionally in hours and days as well.
+- Since the time is stored in the Global Progress Clocks module data, it is persistent in your world and automatically shared with all players.
+- They can tell the time in hours and minutes, posting the time as a chat message.
+- They provide entry points for easy customisation, as well as some examples of more complex automations that can be driven by this system (but are not actually part of the core DB Time system):
+
+  - Automatically posting the time of day to chat at the start of each hour, or shift
+  - Automatically updating the scene lighting at dawn and sunset
+
+I had a few goals when creating this system:
+
+- The GM is always in control. While these scripts help keep track of the passage of time, they never decide what the time is. That's the GM's job.
+- They should be simple to use. Once the clocks are created and the scripts are copied over, this system is very easy to run. Click a button in the macro toolbar to advance time by a stretch, or by a shift. If your party take a shift rest and you have rolled a random encounter, you can easily create a "half shift" macro that will advance time by half a shift. Drag that to the macro toolbar and you have a single-click half-shift button.
+- They should be simple to customise. Out of the box, the scripts already do the stuff that I find useful - track time, tell the time, and allow customisation.
+- Learn me some JavaScript. While I have a decent amount of software engineering experience, I have very little JavaScript experience, and even less with the Foundry API.
 
 ## Dependencies
 
+- Foundry VTT Version 12 or higher
 - [Global Progress Clocks](https://foundryvtt.com/packages/global-progress-clocks)
 
 This is an essential requirement. The timekeeping scripts will fail to run without this module present and configured. Install Global Progress Clocks before moving on to the installation of Dragonbane Timekeeping.
@@ -35,3 +53,11 @@ There is just one thing to consider. If you want to have a clock for hours that 
 And don't worry if you get the clocks wrong. The script will complain if a clock has the wrong number of sections and if it can't find the Stretch or Shift clocks. But if you give the Hour or Day clocks the wrong name then the script won't complain, it will just behave as if they don't exist.
 
 ### Step Two
+
+General points:
+
+- Grabbing the raw macro text
+- Make sure the macro names in Foundry are the same as the file names in the GitHub repository, but without the `.js` extension.
+- Open the [Foundry Macro Directory](https://foundryvtt.com/article/macros/) and create a new folder called `DB Time`. Unlike the macro names, this folder name doesn't matter.
+
+Now, one at a time, create script macros for every `.js` file in the [dbtime]() folder.
