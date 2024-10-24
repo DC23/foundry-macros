@@ -26,7 +26,7 @@ const SHIFT_CLOCK_NAME = 'Shift'
 
 // This does the same thing as the SHIFTS_PER_DAY and STRETCHES_PER_DAY, but since I don't have a larger clock
 // it's not days per anything.
-const DAY_CLOCK_SEGMENTS = 30
+const DAY_CLOCK_SEGMENTS = 128
 const DAY_CLOCK_NAME = 'Day'
 
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
