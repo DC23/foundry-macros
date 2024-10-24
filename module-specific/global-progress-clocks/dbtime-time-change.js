@@ -8,7 +8,7 @@ Unlike the stretch, hour, shift, and day change macros which are only called whe
 clocks have changed, this script is always called when the time is changed in any way.
 
 Foundry v12
-Version 1.5
+Version 1.6
 */
 
 //----------------------------------------------------------------------
@@ -87,7 +87,11 @@ async function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
 
 if (scope.time.shift === 0 || scope.time.shift === 1) {
     // Is it dawn?
-    if (scope.time.stretch >= 0 && scope.time.stretch <= 4) {
+    if (
+        scope.time.shift === 0 &&
+        scope.time.stretch >= 0 &&
+        scope.time.stretch <= 4
+    ) {
         // interpolate the darkness value based on the current stretch
         const darknessScaling = (4 - scope.time.stretch) / 5
         const darkness = scaleDarknessVector(darknessScaling)
@@ -100,7 +104,11 @@ if (scope.time.shift === 0 || scope.time.shift === 1) {
     }
 } else if (scope.time.shift === 2 || scope.time.shift === 3) {
     // Is it sunset?
-    if (scope.time.stretch >= 0 && scope.time.stretch <= 4) {
+    if (
+        scope.time.shift === 2 &&
+        scope.time.stretch >= 0 &&
+        scope.time.stretch <= 4
+    ) {
         // interpolate the darkness value based on the current stretch
         const darknessScaling = (scope.time.stretch + 1) / 5
         const darkness = scaleDarknessVector(darknessScaling)

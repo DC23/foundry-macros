@@ -9,7 +9,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.35
+Version 1.36
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -26,7 +26,7 @@ const SHIFT_CLOCK_NAME = 'Shift'
 
 // This does the same thing as the SHIFTS_PER_DAY and STRETCHES_PER_DAY, but since I don't have a larger clock
 // it's not days per anything.
-const DAY_CLOCK_SEGMENTS = 30
+const DAY_CLOCK_SEGMENTS = 128
 const DAY_CLOCK_NAME = 'Day'
 
 const STRETCHES_PER_SHIFT = STRETCHES_PER_HOUR * HOURS_PER_SHIFT
@@ -66,7 +66,7 @@ function validate_clock (clock, name, segments, optional = false) {
 /**
  * Gets a validated timekeeping progress clock by name.
  * @param {string} name
- * @param {number} segments
+ * @param {number} segments The expected number of clock segments
  * @param {boolean} optional An optional clock will return null if it is missing, while a required clock will raise an exception if missing.
  * @returns {Object} The validated Global Progress Clocks clock object, or null if a valid clock could not be found.
  */
@@ -206,8 +206,7 @@ Why bother mixing 0 and 1 based indexing? Using 0-based makes all the integer ar
 I just need to subtract 1 when getting the current value out of a clock, and to add 1 when setting it back.
 */
     console.group('increment')
-    // FIXME: should be > 0 once I finish testing
-    if (increment >= 0) {
+    if (increment > 0) {
         const currentTime = getCurrentTime(stretch, hour, shift, day)
         calculateTimeOfDay(currentTime)
 
@@ -233,6 +232,15 @@ I just need to subtract 1 when getting the current value out of a clock, and to 
         }
         // This is the final remainder of stretches regardless of whether the optional hours are in use or not
         newTime.stretch = remainingStretches
+
+        // Wrap the day counter when it hits the limit
+        // See issue #33
+        if (day && newTime.day >= day.max) {
+            ui.notifications.warn(
+                `DB Time: The day counter has hit the maximum of ${day.max}. Wrapping to day 1`
+            )
+            newTime.day = 0
+        }
 
         calculateTimeOfDay(newTime)
 
@@ -302,7 +310,7 @@ async function tellTime (stretch, hour, shift, day, includeDay) {
     calculateTimeOfDay(time)
     let content = `It's ${time.time}`
     if (includeDay) content += ` on day ${time.day + 1}` // display in 1-based days
-    console.debug(content)
+    console.log(content)
     ChatMessage.create({
         speaker: { actor: game.user.id },
         content: content,
@@ -341,7 +349,7 @@ if (stretch && shift) {
             await setAllClocks(scope, stretch, hour, shift, day)
             break
         case 'tell':
-            await tellTime(stretch, hour, shift, day, scope.includeDay)
+            await tellTime(stretch, hour, shift, day, scope.includeDay && day)
             break
     }
 }
