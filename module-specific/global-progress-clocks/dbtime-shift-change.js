@@ -15,7 +15,7 @@ Version 1.0
  */
 // post the time to chat
 /*
-let content = `It's ${scope.newTime.time} on day ${scope.newTime.day + 1}` // display in 1-based days
+let content = `It's ${scope.time.time} on day ${scope.time.day + 1}` // display in 1-based days
 ChatMessage.create({
     speaker: { actor: game.user.id },
     content: content,
