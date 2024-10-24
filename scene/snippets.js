@@ -11,7 +11,7 @@ Version 1.0
  * change the current scene lighting to 0.6 with animation time of 3000ms
  * darkness level: full bright = 0, full dark = 1
 */
-canvas.scene.update(
+await canvas.scene.update(
     { 'environment.darknessLevel': 0.6 },
     { animateDarkness: 3000 }
 )

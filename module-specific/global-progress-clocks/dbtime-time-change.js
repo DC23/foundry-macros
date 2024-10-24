@@ -78,8 +78,8 @@ function scaleDarknessVector (scale) {
     return darkness
 }
 
-function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
-    canvas.scene.update(
+async function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
+    await canvas.scene.update(
         { 'environment.darknessLevel': darkness },
         { animateDarkness: animate }
     )
@@ -92,11 +92,11 @@ if (scope.time.shift === 0 || scope.time.shift === 1) {
         const darknessScaling = (4 - scope.time.stretch) / 5
         const darkness = scaleDarknessVector(darknessScaling)
         console.log('Dawn darkness: %f', darkness)
-        setSceneDarkness(darkness)
+        await setSceneDarkness(darkness)
     } else if (canvas.scene.environment.darknessLevel != DAY_SCENE_DARKNESS) {
         // we need to ensure that the current scene darkness level matches the day setting
         // since large time jumps can easily skip the dawn or dusk transitions
-        setSceneDarkness(DAY_SCENE_DARKNESS)
+        await setSceneDarkness(DAY_SCENE_DARKNESS)
     }
 } else if (scope.time.shift === 2 || scope.time.shift === 3) {
     // Is it sunset?
@@ -105,10 +105,10 @@ if (scope.time.shift === 0 || scope.time.shift === 1) {
         const darknessScaling = (scope.time.stretch + 1) / 5
         const darkness = scaleDarknessVector(darknessScaling)
         console.log('Sunset darkness: %f', darkness)
-        setSceneDarkness(darkness)
+        await setSceneDarkness(darkness)
     } else if (canvas.scene.environment.darknessLevel != NIGHT_SCENE_DARKNESS) {
         // we need to ensure that the current scene darkness level matches the night setting
         // since large time jumps can easily skip the dawn or dusk transitions
-        setSceneDarkness(NIGHT_SCENE_DARKNESS)
+        await setSceneDarkness(NIGHT_SCENE_DARKNESS)
     }
 }
