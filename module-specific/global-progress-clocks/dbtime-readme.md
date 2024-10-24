@@ -22,8 +22,8 @@ There is just one thing to consider. If you want to have a clock for hours that 
 
 | Clock Name | Number of Sections | Optional |
 |---|---|---|
-| Stretch | 24 (if you don't have an Hour clock)| No |
-| Stretch | 4 (if you do have an Hour clock)| No |
+| Stretch | 24 (if you **don't** have an Hour clock)| No |
+| Stretch | 4 (if you **do** have an Hour clock)| No |
 | Hour | 6 | Yes |
 | Shift | 4 | No |
 | Day | 128 | Yes |
