@@ -73,10 +73,10 @@ For my own games, I've given the four shifts in a day names and beginning and en
 
 | Shift     | Time Span           | Day or Night | 0-based Index | Display |
 | -----     | ---------           | :----------: |:-----------: | :-----: |
-| Morning   | 6:00 AM to 12:00 PM | Day | 0 | img |
-| Afternoon | 12:00 PM to 6:00 PM | Day | 1 | img |
-| Evening   | 6:00 PM to 12:00 AM | Night | 2 | img |
-| Night     | 12:00 AM to 6:00 PM | Night | 3 | img |
+| Morning   | 6:00 AM to 12:00 PM | Day | 0 | ![Image of morning shift clock](./images/morning.jpg)|
+| Afternoon | 12:00 PM to 6:00 PM | Day | 1 | ![Image of afternoon shift clock](./images/afternoon.jpg)|
+| Evening   | 6:00 PM to 12:00 AM | Night | 2 | ![Image of evening shift clock](./images/evening.jpg)|
+| Night     | 12:00 AM to 6:00 PM | Night | 3 | ![Image of night shift clock](./images/night.jpg)|
 
 Yes, this is different from the modern understanding that a new day starts at midnight. I don't care. People in my games are pragmatic, and their day starts at dawn when they get up to start the day. That's at 6am.
 
