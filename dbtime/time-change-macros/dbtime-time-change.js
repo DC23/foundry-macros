@@ -18,7 +18,7 @@ Version 1.6
  * enabled, while anything placed into dbtime-hour-change is only called when the Hour clock
  * is in use.
  */
-if (scope.time.stretch % 4 === 0) {
+if (scope.time.stretch % scope.constants.STRETCHES_PER_HOUR === 0) {
     // it's the start of a new hour
 
     if (scope.time.stretch === 0 && scope.time.shift === 0) {
