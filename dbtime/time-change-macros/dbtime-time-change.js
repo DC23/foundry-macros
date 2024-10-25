@@ -8,7 +8,7 @@ Unlike the stretch, hour, shift, and day change macros which are only called whe
 clocks have changed, this script is always called when the time is changed in any way.
 
 Foundry v12
-Version 1.6
+Version 1.8
 */
 
 //----------------------------------------------------------------------
@@ -35,31 +35,11 @@ if (scope.time.stretch % scope.constants.STRETCHES_PER_HOUR === 0) {
 
 /**
  * Scene Lighting Automation
- * 
- * An example of how the time handling system can be used to drive more complex automations.
- * Just delete this whole section if you don't want to automatically change scene 
+ *
+ * An example of how DB Time can be used to drive more complex automations.
+ * Just delete this whole section if you don't want to automatically change scene
  * lighting based on the time of day.
  *
- * Shift 0 is 6am to 12pm
- * Shift 1 is 12pm to 6pm
- * Shift 2 is 6pm to 12am
- * Shift 3 is 12am to 6am
- *
- * Shifts 0 & 1 are daylight shifts, while 2 & 3 are night shifts.
- * Sunrise is from 6am to 7am
- * Sunset is from 6pm to 7pm
- *
- * 6:00 am -> shift 0, stretch 0
- * 6:15 am -> shift 0, stretch 1
- * 6:30 am -> shift 0, stretch 2
- * 6:45 am -> shift 0, stretch 3
- * 7:00 am -> shift 0, stretch 4
- *
- * 6:00 pm -> shift 2, stretch 0
- * 6:15 pm -> shift 2, stretch 1
- * 6:30 pm -> shift 2, stretch 2
- * 6:45 pm -> shift 2, stretch 3
- * 7:00 pm -> shift 2, stretch 4
  */
 
 // The daytime scene darkness level
@@ -89,42 +69,41 @@ async function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
     )
 }
 
-/**
- * While I love the interpolation idea I came up with, it breaks when an hour clock is present, since the pattern of stretches and shifts is different.
- */
+// totalStretches % STRETCHES_PER_DAY gives a consistent time of day
+// regardless of the use of the hours clock.
+const dailyStretch =
+    scope.time.totalStretches % scope.constants.STRETCHES_PER_DAY
 
+// Shifts 0 and 1 are the day shifts
 if (scope.time.shift === 0 || scope.time.shift === 1) {
-    // Is it dawn?
-    if (
-        scope.time.shift === 0 &&
-        scope.time.stretch >= 0 &&
-        scope.time.stretch <= 4
-    ) {
+    // Dawn (6:00 to 7:00) is from stretch 0 to 4
+    if (dailyStretch >= 0 && dailyStretch <= 4) {
         // interpolate the darkness value based on the current stretch
-        const darknessScaling = (4 - scope.time.stretch) / 5
+        const darknessScaling = (4 - dailyStretch) / 5
         const darkness = scaleDarknessVector(darknessScaling)
         console.log('Dawn darkness: %f', darkness)
         await setSceneDarkness(darkness)
     } else if (canvas.scene.environment.darknessLevel != DAY_SCENE_DARKNESS) {
         // we need to ensure that the current scene darkness level matches the day setting
         // since large time jumps can easily skip the dawn or dusk transitions
+        console.log('Setting scene to day lighting: %f', DAY_SCENE_DARKNESS)
         await setSceneDarkness(DAY_SCENE_DARKNESS)
     }
-} else if (scope.time.shift === 2 || scope.time.shift === 3) {
-    // Is it sunset?
-    if (
-        scope.time.shift === 2 &&
-        scope.time.stretch >= 0 &&
-        scope.time.stretch <= 4
-    ) {
+}
+// Shifts 2 and 3 are the night shifts
+else if (scope.time.shift === 2 || scope.time.shift === 3) {
+    // Dusk (18:00 to 19:00) is from stretch 48 to 52
+    if (dailyStretch >= 48 && dailyStretch <= 52) {
         // interpolate the darkness value based on the current stretch
-        const darknessScaling = (scope.time.stretch + 1) / 5
+        // I'm actually subtracting 48 to get back to a range of 0 to 4, then adding 1 and dividing by 5
+        const darknessScaling = (dailyStretch - 47) / 5
         const darkness = scaleDarknessVector(darknessScaling)
         console.log('Sunset darkness: %f', darkness)
         await setSceneDarkness(darkness)
     } else if (canvas.scene.environment.darknessLevel != NIGHT_SCENE_DARKNESS) {
         // we need to ensure that the current scene darkness level matches the night setting
         // since large time jumps can easily skip the dawn or dusk transitions
+        console.log('Setting scene to night lighting: %f', NIGHT_SCENE_DARKNESS)
         await setSceneDarkness(NIGHT_SCENE_DARKNESS)
     }
 }
