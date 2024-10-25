@@ -24,7 +24,8 @@ I had a few goals when creating this system:
 - Foundry VTT Version 12 or higher
 - [Global Progress Clocks](https://foundryvtt.com/packages/global-progress-clocks)
 
-This is an essential requirement. The timekeeping scripts will fail to run without this module present and configured. Install Global Progress Clocks before moving on to the installation of Dragonbane Timekeeping.
+> [!IMPORTANT]
+> **Global Progress Clocks is an essential requirement.** The timekeeping scripts will fail to run without this module present and configured. Install Global Progress Clocks before moving on to the installation of the Dragonbane Timekeeping scripts.
 
 ## Installation
 
@@ -50,7 +51,8 @@ The hours clock adds a slight complication. If you want to show hours, then your
 
 ![Image of the Optional Clocks](./images/optional-clocks.jpg)
 
-And don't worry if you get the clocks wrong. The script will complain if a clock has the wrong number of sections and if it can't find the Stretch or Shift clocks. But if you give the Hour or Day clocks the wrong name then the script won't complain, it will just behave as if they don't exist.
+>[!TIP]
+> Don't worry if you get the clocks wrong. The script will complain if a clock has the wrong number of sections or if it can't find the Stretch or Shift clocks. But if you give the Hour or Day clocks the wrong name then the script won't complain, it will just behave as if they don't exist.
 
 ### Step Two
 
@@ -109,3 +111,19 @@ time:
   DAY_CLOCK_SEGMENTS: 128
   MINUTES_PER_DAY: 1440
 ```
+
+## Other Games
+
+While I wrote DB Time for Dragonbane, there's nothing in it that's actually specific to the Dragonbane rules. With a couple of tiny modifications these scripts can be used with nearly any other game. For example, I'm using it with the [Basic Fantasy Role-Playing Game](https://www.basicfantasy.org/index.html) with only the following changes to `dbtime-engine`:
+
+```js
+// BFRPG uses 10 minute turns, not 15 minute stretches. That's 6 per hour.
+const STRETCHES_PER_HOUR = 6
+const STRETCH_CLOCK_NAME = 'Turn'
+```
+
+With those two lines changed, I'll also need to make changes to the **Global Progress Clocks** I create in Foundry. Instead of a Stretch clock with 4 or 24 sections (depending on whether I have an hour clock or not), I now create a Turn clock with 6 or 36 sections, again depending on whether I have an hour clock. Everything else is the same. I still have the same 4 shifts in a day, and the time of day still just works.
+
+The default settings in `dbtime-increment` will also be wrong, but only because the multiples of a turn that correspond to an hour, a shift, or a day are now different. Calculating the new values and updating the scripts is trivial. And `dbtime-increment` itself is still correct. It's faithfully incrementing the time by exactly the amount you ask for.
+
+The sunrise and sunset code is slightly wrong, with those events now taking place over 40 minutes instead of 60. This is because I apply those events over a fixed number of stretches. That hardly matters and is easily fixed.
