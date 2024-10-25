@@ -11,7 +11,7 @@ Dependencies:
   - Global Progress Clocks >= 0.4.5
 
 Foundry v12
-Version 1.36
+Version 1.38
 */
 
 // 4 stretches per hour and 6 hours per shift is the same as 24 fifteen minute stretches per shift.
@@ -45,6 +45,16 @@ CLOCK_UPDATE_MACRO_NAMES[DAY_CLOCK_NAME] = 'dbtime-day-change'
 
 // the macro called when the overall time has changed, independently of any specific clock
 CLOCK_UPDATE_MACRO_NAMES['time'] = 'dbtime-time-change'
+
+const CONSTANTS = {
+    STRETCHES_PER_HOUR: STRETCHES_PER_HOUR,
+    HOURS_PER_SHIFT: HOURS_PER_SHIFT,
+    SHIFTS_PER_DAY: SHIFTS_PER_DAY,
+    DAY_CLOCK_SEGMENTS: DAY_CLOCK_SEGMENTS,
+    STRETCHES_PER_SHIFT: STRETCHES_PER_SHIFT,
+    STRETCHES_PER_DAY: STRETCHES_PER_DAY,
+    MINUTES_PER_DAY: MINUTES_PER_DAY,
+}
 
 /**
  * Validates a Global Progress Clock clock.
@@ -105,7 +115,7 @@ async function callChangeMacro (name, oldTime, newTime) {
         await changeMacro.execute({
             oldTime: oldTime,
             time: newTime,
-            minutesPerStretch: MINUTES_PER_STRETCH,
+            constants: CONSTANTS,
         })
 }
 
