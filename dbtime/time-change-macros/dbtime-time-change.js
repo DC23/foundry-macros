@@ -39,6 +39,9 @@ if (scope.time.stretch % scope.constants.STRETCHES_PER_HOUR === 0) {
  * An example of how DB Time can be used to drive more complex automations.
  * Just delete this whole section if you don't want to automatically change scene
  * lighting based on the time of day.
+ * 
+ * Note that this macro is active on every scene. If you don't want a scene to be affected,
+ * then turn the "Lock Darkness Level" setting on for that scene in the scene configuration.
  *
  */
 
