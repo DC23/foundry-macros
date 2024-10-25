@@ -32,11 +32,11 @@ This is not a module, but a collection of scripts. While I've tried to make it a
 
 ### Step One
 
-Before copying the macros over from the GitHub repository, you need to create your clocks using the Global Progress Clocks UI. Two clocks are essential - one for tracking the current stretch, and one for tracking the shift. Two optional clocks are also supported for tracking hours and days. If you want to track hours or days, then create clocks for them too. If you don't care about them, don't create the clocks. The scripts check for which clocks you create and work out what to do based on that. It's almost that simple.
+Before copying the macros over from the GitHub repository, you need to create your clocks using the Global Progress Clocks UI. Two clocks are essential - one for stretches, and one for shifts. Clocks for hours and days are optional. If they are there, they will be used and if they are left out, they'll be ignored. It's almost that simple.
 
 Almost.
 
-There is just one thing to consider. If you want to have a clock for hours that sits in between stretches and shifts, then your stretch clock needs to have just 4 sections, and the hour clock will have 6 sections. Together they make up the 24 stretches in a shift. If you don't want hours in a clock, just make a stretch clock with all 24 sections. This table shows the clocks, their required names and the numbers of sections.
+The hours clock adds a slight complication. If you want to show hours, then your stretch clock needs to have just 4 sections, while the hour clock will have 6 sections. Together they make up the 24 stretches in a shift. Without the hour clock, the stretch clock has 24 sections. This table shows the clocks, their required names and the numbers of sections.
 
 | Clock Name | Number of Sections | Optional |
 |---|---|---|
@@ -54,16 +54,46 @@ And don't worry if you get the clocks wrong. The script will complain if a clock
 
 ### Step Two
 
-General points:
+Open the [Foundry Macro Directory](https://foundryvtt.com/article/macros/) and create a new folder called `DB Time`. Unlike the macro names, this folder name doesn't matter.
 
-- How to copy the raw macro text
-- Open the [Foundry Macro Directory](https://foundryvtt.com/article/macros/) and create a new folder called `DB Time`. Unlike the macro names, this folder name doesn't matter.
-
-Now, one at a time, create script macros for every `.js` file in the [dbtime](./) folder in the Foundry `DB Time` macro folder you just created. I'll explain each of the files briefly here, although they all have extensive comments as well.
+Now, one at a time, create script macros for every `.js` file in the [dbtime](./) folder in the Foundry `DB Time` macro folder you just created. Copy the code for each macro from the file in the GitHub repo into your macro and save it. I'll explain what each of the files does here, although they all have extensive comments as well.
 
 - [dbtime-engine](./dbtime-engine.js)
 This is the implementation of DB Time. You can poke around in here if you want to see all the terrible things I've done to make this work, but you don't need to tinker with this file to use DB Time. You just need to copy it over and call it `dbtime-engine`. This is important. Many of the other macros search for `dbtime-engine` by name, so don't call it anything else.
 - [dbtime-increment](./dbtime-increment.js) This one is simple. It calls the DB Time Engine and asks it to move the time forward by a number of stretches. You can create as many copies of this macro as you want, with different names that advance by different amounts of time. Inside the file I've given most of the common examples you might need. Set up the ones you want, give them memorable names, drag them to the macro toolbar, and that's your one-click button for controlling the time.
-- [dbtime-set](./dbtime-set.js) Sets the time to exactly what you ask for. As is, it's a reset. Setting all the values to 1 sets time back to the first stretch of the first shift of the first day. Again, you can have lots of these if you need to set the time to different things. Maybe one day I'll make a dialog to do the same thing.
+- [dbtime-set](./dbtime-set.js) Sets the time to exactly what you ask for. As is, it's a reset. Setting all the values to 1 sets time back to the first stretch of the first shift of the first day (6:00AM). Again, you can have lots of these if you need to set the time to different things. Maybe one day I'll make a dialog to do the same thing.
 - [dbtime-tell-time](./dbtime-tell-time.js) Posts the current time of day in hours and minutes to chat.
-- [dbtime/time-change-macros](./time-change-macros/) To do ...
+- [dbtime/time-change-macros](./time-change-macros/) These are the macros where you can do your customisations. Along with `dbtime-engine`, their macro names in Foundry must exactly match the repository name, minus the `.js` extension. The four macros named after a clock - stretch, hour, shift, day - are called only when that clock changes the displayed value. The final macro - `dbtime-time-change` - is called whenever the time changes at all. Some of these have examples of their use, like posting the time to chat at the start of each hour or shift, or even automating changes to the scene light level based on the time of day. An important quirk to keep in mind is that `dbtime-hour-change` and `dbtime-day-change` are **only called** if the corresponding hour and day clocks are being used. There is example code in `dbtime-time-change` showing how to detect the start of the hour and day reliably in every situation.
+
+## The Reckoning of Time
+
+Dragonbane rules tell us that time is marked in stretches and shifts. A stretch is 15 minutes long, and a shift lasts for 6 hours. I've adhered to that, and from those numbers all the rest of the timekeeping follows. There are 4 stretches to an hour, 6 hours to a shift, and 4 shifts to a day.
+
+For my own games, I've given the four shifts in a day names and beginning and end times of day, and I've used those in **DB Time**. I needed to make some assumptions in order to translate any given stretch and shift into a time of day, so I went with the system I was already using. Here's how it works, and how to read it from the Global Progress Shift clock:
+
+| Shift     | Time Span           | Day or Night | 0-based Index | Display |
+| -----     | ---------           | :----------: |:-----------: | :-----: |
+| Morning   | 6:00 AM to 12:00 PM | Day | 0 | img |
+| Afternoon | 12:00 PM to 6:00 PM | Day | 1 | img |
+| Evening   | 6:00 PM to 12:00 AM | Night | 2 | img |
+| Night     | 12:00 AM to 6:00 PM | Night | 3 | img |
+
+Yes, this is different from the modern understanding that a new day starts at midnight. I don't care. People in my games are pragmatic, and their day starts at dawn when they get up to start the day. That's at 6am.
+
+The example scene lighting system I've put into the `dbtime-time-change` macro implements dawn between 6AM and 7AM, and dusk between 6PM and 7PM each day. If you increment time forward by more than an hour and the dawn or dusk cycle is missed, it checks the scene lighting and just sets the darkness level directly to the correct day or night value.
+
+## Automation
+
+The time change macros receive the following objects in the `scope` variable:
+
+- Two instances of a time object. One, `oldTime`, gives the previous time setting, and the other `time` gives the current time.
+
+```yaml
+time:
+  stretch: number, the 0-based value of the stretch clock
+  shift: number, the 0-based value of the shift clock
+  hour: number, the 0-based value of the hour clock
+  day: number, the 0-based value of the day clock
+  time: string, the time of day formatted as a string in the form "h:MM AM/PM"
+  totalStretches: number, the total number of stretches since stretch 0, shift 0, day 0
+```
