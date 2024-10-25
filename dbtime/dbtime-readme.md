@@ -97,3 +97,15 @@ time:
   time: string, the time of day formatted as a string in the form "h:MM AM/PM"
   totalStretches: number, the total number of stretches since stretch 0, shift 0, day 0
 ```
+
+- A `constants` object containing a number of numeric constants that might be helpful if you need to do calculations.
+
+```yaml
+  STRETCHES_PER_HOUR: 4
+  STRETCHES_PER_SHIFT: 24
+  STRETCHES_PER_DAY: 96
+  HOURS_PER_SHIFT: 6
+  SHIFTS_PER_DAY: 4
+  DAY_CLOCK_SEGMENTS: 128
+  MINUTES_PER_DAY: 1440
+```
