@@ -35,9 +35,9 @@ if (scope.time.stretch % scope.constants.STRETCHES_PER_HOUR === 0) {
 
 /**
  * Scene Lighting Automation
- * 
+ *
  * An example of how the time handling system can be used to drive more complex automations.
- * Just delete this whole section if you don't want to automatically change scene 
+ * Just delete this whole section if you don't want to automatically change scene
  * lighting based on the time of day.
  *
  * Shift 0 is 6am to 12pm
@@ -90,8 +90,20 @@ async function setSceneDarkness (darkness, animate = ANIMATE_DARKNESS_MS) {
 }
 
 /**
- * While I love the interpolation idea I came up with, it breaks when an hour clock is present, since the pattern of stretches and shifts is different.
+ * While I love the interpolation idea I came up with, 
+ * it breaks when an hour clock is present,
+ * since the pattern of stretches and shifts is different.
+ * 
+ * totalStretches % STRETCHES_PER_DAY is consistent regardless of 
+ * the use of the hours clock.
+ * 
+ * Dawn (6:00 to 7:00) is from stretch 0 to 4
+ * Dusk (18:00 to 19:00) is from stretch 48 to 52
  */
+
+const stretch = scope.time.totalStretches % scope.constants.STRETCHES_PER_DAY
+console.log('Stretch residual: %d, Time: %s', stretch, scope.time.time)
+
 
 if (scope.time.shift === 0 || scope.time.shift === 1) {
     // Is it dawn?
