@@ -46,6 +46,11 @@ const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
 // TODO: subtle animations
 // TODO: animation intensity
 
+/**
+ * Be warned that if you ever add new options to this, the keys must be unique.
+ * By this I mean the light names, such as 'Torch', 'Tallow Candle' etc.
+ * This macro will explode if these names are not unique!
+ */
 const LIGHTS = {
     noLight: {
         dim: 0,
@@ -107,7 +112,8 @@ const LIGHTS = {
  * You don't need to configure anything below here.
  */
 
-// Build a set of all the lighting options that will be shown in the UI
+// Build a Set of all the lighting options that will be shown in the UI.
+// Helps ensure unique keys
 const states = new Set(Object.keys(LIGHTS))
 
 /**
@@ -116,48 +122,65 @@ const states = new Set(Object.keys(LIGHTS))
  */
 states.delete('noLight')
 
-// toggle the light. If the token has a light already, then turn it off
-// TODO: iterate all selected tokens
-const state = token.document.flags.world?.light ?? null
-if (states.has(state))
-    return token.document.update({
-        light: LIGHTS.noLight,
-        'flags.world.light': null,
-    })
+/**
+ * Iterate all selected tokens.
+ * If any have already had a light set, then clear it.
+ * If any have no light, then add them to the array and bring up the UI
+ */
+let unlitTokens = []
+for (let token of canvas.tokens.controlled) {
+    const state = token.document.flags.world?.light ?? null
+    if (states.has(state)) {
+        // this token is lit, turn it off
+        token.document.update({
+            light: LIGHTS.noLight,
+            'flags.world.light': null,
+        })
+    } else {
+        // this token is unlit, add it to the array to process
+        unlitTokens.push(token)
+    }
+}
 
-// otherwise, show the dialog so the user can choose a new light effect
-// TODO: handle the exception when the dialog is closed without a choice being made.
-return foundry.applications.api.DialogV2.wait({
-    window: { title: 'Light Config' },
-    position: { width: 400 },
-    render: (event, html) =>
-        html.querySelector('.form-footer').classList.add('flexcol'),
-    buttons: Array.from(states).map(k => {
-        return {
-            label: k,
-            // label: CONFIG.Canvas.lightAnimations[k]?.label || k,   * I don't really want the button labels tied to the animation names
-            callback: callback,
-            action: k,
-        }
-    }),
-})
+// show the dialog so the user can choose a new light effect
+if (unlitTokens.length) {
+    const subtleAnimations = new foundry.data.fields.BooleanField({
+        label: 'Subtle Animations',
+    }).toFormGroup(
+        { rootId: 'subtle-animations' },
+        { name: 'subtle-animations', value: true }
+    ).outerHTML
+
+    return foundry.applications.api.DialogV2.wait({
+        window: { title: 'Light Config' },
+        position: { width: 400 },
+        rejectClose: false,
+        render: (event, html) =>
+            html.querySelector('.form-footer').classList.add('flexcol'),
+        content: subtleAnimations,
+        buttons: Array.from(states).map(k => {
+            return {
+                label: k,
+                callback: setTokenLights,
+                action: k, // just use the button label as a flag. We know the strings are unique since states is a Set
+            }
+        }),
+    })
+}
 
 /**
  * @param {Object} event the button click event
  * @param {*} button the button that triggered the event.
  * @returns
  */
-async function callback (event, button) {
+async function setTokenLights (event, button) {
     // Retrieve the required light properties
     const state = button.dataset.action
+    // TODO: do something with this
+    const subtle = $('#subtleAnimations').is(":checked")
     const light = LIGHTS[state]
-    console.log(
-        'Token: %s, state: %O, light: %O',
-        token.document.name,
-        state,
-        light
-    )
     // Then update the token lighting and store the light in a flag
-    // TODO: iterate all selected tokens
-    return token.document.update({ light: light, 'flags.world.light': state })
+    for (let token of unlitTokens) {
+        token.document.update({ light: light, 'flags.world.light': state })
+    }
 }
