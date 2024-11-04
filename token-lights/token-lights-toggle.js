@@ -19,38 +19,109 @@
 /**
  * Configure all your light options here.
  */
-const lightConfigs = {
-    def: { dim: 0, bright: 0 },
-    torch: {
-        dim: 40,
-        bright: 20,
-        color: '#92bd51',
-        animation: { type: 'torch' },
+
+const COLOR_FIRE = '#a88115'
+const COLOR_WHITE = '#ffffff'
+const COLOR_MOON_GLOW = '#d4d4d4'
+
+/**
+ * Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
+ * Simply adjust to match the units per grid square in your game and the lighting settings should
+ * work out.
+ * Value 2: bright light 10, dim light 12
+ * Value 5: bright light 25, dim light 30
+ * Value 6: bright light 30, dim light 36
+ */
+const GAME_MULTIPLIER_PER_SQUARE = 2
+
+// These two are for the standard lights - torches, lanterns, magical lighting
+const BRIGHT_LIGHT_RADIUS = 4 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
+
+// These are for candles
+const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
+
+// TODO: add the list of animation types
+// TODO: subtle animations
+// TODO: animation intensity
+
+const LIGHTS = {
+    noLight: {
+        dim: 0,
+        bright: 0,
         angle: 360,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'none' },
     },
-    bullseye: {
-        dim: 120,
-        bright: 60,
-        color: '#92bd51',
-        animation: { type: 'torch' },
+    Torch: {
+        dim: DIM_LIGHT_RADIUS,
+        bright: BRIGHT_LIGHT_RADIUS * 0.9, // torches have a bright radius just a little smaller than lanterns
+        color: COLOR_FIRE,
+        angle: 360,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'torch', speed: 5, intensity: 2 },
+    },
+    // not a Dragonbane thing, but I love the effect so much!
+    'Bullseye Lantern': {
+        dim: DIM_LIGHT_RADIUS * 1.4,
+        bright: BRIGHT_LIGHT_RADIUS * 1.2,
+        color: COLOR_FIRE,
         angle: 60,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'torch' },
     },
-    // candle
-    // lantern
-    // magical
+    'Lantern / Oil Lamp': {
+        dim: DIM_LIGHT_RADIUS,
+        bright: BRIGHT_LIGHT_RADIUS,
+        color: COLOR_FIRE,
+        angle: 360,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'torch', speed: 3, intensity: 2 },
+    },
+    'Tallow Candle': {
+        dim: DIM_CANDLE_RADIUS,
+        bright: BRIGHT_CANDLE_RADIUS,
+        color: COLOR_FIRE,
+        angle: 360,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'torch', speed: 5, intensity: 4 },
+    },
+    'Light Trick': {
+        dim: DIM_LIGHT_RADIUS,
+        bright: BRIGHT_LIGHT_RADIUS,
+        color: COLOR_MOON_GLOW,
+        angle: 360,
+        luminosity: 0.5,
+        alpha: 0.3,
+        animation: { type: 'fog', speed: 3, intensity: 4 },
+    },
 }
 
+/**
+ * You don't need to configure anything below here.
+ */
+
 // Build a set of all the lighting options that will be shown in the UI
-const states = new Set(Object.keys(lightConfigs))
+const states = new Set(Object.keys(LIGHTS))
 
-// remove the no-lights option. We need the options for it, but don't want it in the states set.
-states.delete('def')
+/**
+ * remove the no-lights option. We need the options for it,
+ * but don't want it in the set of states used to build the UI
+ */
+states.delete('noLight')
 
-// toggle the light. If the token has a light set, then turn the lights off
+// toggle the light. If the token has a light already, then turn it off
+// TODO: iterate all selected tokens
 const state = token.document.flags.world?.light ?? null
 if (states.has(state))
     return token.document.update({
-        light: lightConfigs.def,
+        light: LIGHTS.noLight,
         'flags.world.light': null,
     })
 
@@ -63,7 +134,8 @@ return foundry.applications.api.DialogV2.wait({
         html.querySelector('.form-footer').classList.add('flexcol'),
     buttons: Array.from(states).map(k => {
         return {
-            label: CONFIG.Canvas.lightAnimations[k]?.label || k,
+            label: k,
+            // label: CONFIG.Canvas.lightAnimations[k]?.label || k,   * I don't really want the button labels tied to the animation names
             callback: callback,
             action: k,
         }
@@ -78,7 +150,7 @@ return foundry.applications.api.DialogV2.wait({
 async function callback (event, button) {
     // Retrieve the required light properties
     const state = button.dataset.action
-    const light = lightConfigs[state]
+    const light = LIGHTS[state]
     console.log(
         'Token: %s, state: %O, light: %O',
         token.document.name,
@@ -86,5 +158,6 @@ async function callback (event, button) {
         light
     )
     // Then update the token lighting and store the light in a flag
+    // TODO: iterate all selected tokens
     return token.document.update({ light: light, 'flags.world.light': state })
 }
