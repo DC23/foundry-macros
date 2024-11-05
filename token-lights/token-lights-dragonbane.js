@@ -30,7 +30,6 @@ const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
 const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
 
 // Utility functions
-// TODO: rewrite with objects to clean up calls
 function torchLighting (
     token,
     animationType,
