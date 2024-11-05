@@ -157,8 +157,9 @@ const LIGHTS = {
 /**
  * You don't need to configure anything below here.
  * 
- * I mean, you can and are welcome to, but it's not required to modify the 
- * lighting choices you have available to you. That can be done 
+ * I mean, you can, but it's not required to modify the 
+ * lighting choices. That can be done entirely through
+ * changing or adding colours and lights.
  */
 
 // Build a Set of all the lighting options that will be shown in the UI.
