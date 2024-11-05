@@ -13,38 +13,80 @@
  * I owe a debt to the wizards at the Foundry Discord for the core idea that I'm building on.
  *
  * Foundry v12+
- * Version 1.0
+ * Version 1.4
  */
 
 /**
- * Configure all your light options here.
+ * Configure light colours 
  */
-
 const COLOR_FIRE = '#a88115'
 const COLOR_WHITE = '#ffffff'
 const COLOR_MOON_GLOW = '#d4d4d4'
 
 /**
+ * Configure light radius here. The default setting of 2 is for Dragonbane.
+ * 
  * Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
  * Simply adjust to match the units per grid square in your game and the lighting settings should
  * work out.
- * Value 2: bright light 10, dim light 12
- * Value 5: bright light 25, dim light 30
- * Value 6: bright light 30, dim light 36
+ * 
+ * Here's how the GAME_MULTIPLIER_PER_SQUARE values translate to light radii:
+ * 
+ * Value 2: bright light 10 grid squares, dim light 12 grid squares
+ * Value 5: bright light 25 grid squares, dim light 30 grid squares
+ * Value 6: bright light 30 grid squares, dim light 36 grid squares
+ * 
+ * Though I do apply a small fudge factor to the bright radius of torches,
+ * to make them just a little less effective than lanterns.
  */
 const GAME_MULTIPLIER_PER_SQUARE = 2
 
-// These two are for the standard lights - torches, lanterns, magical lighting
+// changing these will change everything quite a lot
 const BRIGHT_LIGHT_RADIUS = 4 * GAME_MULTIPLIER_PER_SQUARE
 const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
-
-// These are for candles
 const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
 const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
 
-// TODO: add the list of animation types
-// TODO: subtle animations
-// TODO: animation intensity
+/**
+ * This is the list of possible animations available for use in the `animation.type` field.
+ * Note that by default I use 'torch' for torches and lanterns while I use 'flame' for candles.
+ * This is a purely personal aesthetic choice. The older version of this Dragonbane lights macro
+ * had a 'subtle torches' checkbox. Unchecking that used 'flame' for everything, which gives a
+ * more exaggerated effect.
+ * 
+ * The first value is the name you can use to configure the animation type, 
+ * the second value is the name you will see in the Foundry UI when configuring a light 
+ * there.
+ * 
+ * This object is commented out because it's here for reference only, 
+ * it's not actually used in this macro.
+ */
+/*
+const animations = {
+    flame: 'Torch',
+    torch: 'Flickering Light',
+    revolving: 'Revolving Light',
+    siren: 'Siren Light',
+    pulse: 'Pulse',
+    chroma: 'Chroma',
+    wave: 'Pulsing Wave',
+    fog: 'Swirling Fog',
+    sunburst: 'Sunburst',
+    dome: 'Light Dome',
+    emanation: 'Mysterious Emanation',
+    hexa: 'Hexa Dome',
+    ghost: 'Ghostly Light',
+    energy: 'Energy Field',
+    vortex: 'Vortex',
+    witchwave: 'Bewitching Wave',
+    rainbowswirl: 'Swirling Rainbow',
+    radialrainbow: 'Radial Rainbow',
+    fairy: 'Fairy Light',
+    grid: 'Force Grid',
+    starlight: 'Star Light',
+    smokepatch: 'Smoke Patch',
+}
+*/
 
 /**
  * Be warned that if you ever add new options to this, the keys must be unique.
@@ -69,6 +111,15 @@ const LIGHTS = {
         alpha: 0.4,
         animation: { type: 'torch', speed: 5, intensity: 2 },
     },
+    'Flickering Torch': {
+        dim: DIM_LIGHT_RADIUS,
+        bright: BRIGHT_LIGHT_RADIUS * 0.9, // torches have a bright radius just a little smaller than lanterns
+        color: COLOR_FIRE,
+        angle: 360,
+        luminosity: 0.5,
+        alpha: 0.4,
+        animation: { type: 'flame', speed: 3, intensity: 2 },
+    },
     // not a Dragonbane thing, but I love the effect so much!
     'Bullseye Lantern': {
         dim: DIM_LIGHT_RADIUS * 1.4,
@@ -77,7 +128,7 @@ const LIGHTS = {
         angle: 60,
         luminosity: 0.5,
         alpha: 0.4,
-        animation: { type: 'torch' },
+        animation: { type: 'torch', speed: 3, intensity: 2 },
     },
     'Lantern / Oil Lamp': {
         dim: DIM_LIGHT_RADIUS,
@@ -95,7 +146,7 @@ const LIGHTS = {
         angle: 360,
         luminosity: 0.5,
         alpha: 0.4,
-        animation: { type: 'torch', speed: 5, intensity: 4 },
+        animation: { type: 'flame', speed: 5, intensity: 4 },
     },
     'Light Trick': {
         dim: DIM_LIGHT_RADIUS,
@@ -110,6 +161,9 @@ const LIGHTS = {
 
 /**
  * You don't need to configure anything below here.
+ * 
+ * I mean, you can and are welcome to, but it's not required to modify the 
+ * lighting choices you have available to you. That can be done 
  */
 
 // Build a Set of all the lighting options that will be shown in the UI.
@@ -144,20 +198,12 @@ for (let token of canvas.tokens.controlled) {
 
 // show the dialog so the user can choose a new light effect
 if (unlitTokens.length) {
-    const subtleAnimations = new foundry.data.fields.BooleanField({
-        label: 'Subtle Animations',
-    }).toFormGroup(
-        { rootId: 'subtle-animations' },
-        { name: 'subtle-animations', value: true }
-    ).outerHTML
-
     return foundry.applications.api.DialogV2.wait({
         window: { title: 'Light Config' },
         position: { width: 400 },
         rejectClose: false,
         render: (event, html) =>
             html.querySelector('.form-footer').classList.add('flexcol'),
-        content: subtleAnimations,
         buttons: Array.from(states).map(k => {
             return {
                 label: k,
@@ -176,8 +222,6 @@ if (unlitTokens.length) {
 async function setTokenLights (event, button) {
     // Retrieve the required light properties
     const state = button.dataset.action
-    // TODO: do something with this
-    const subtle = $('#subtleAnimations').is(":checked")
     const light = LIGHTS[state]
     // Then update the token lighting and store the light in a flag
     for (let token of unlitTokens) {
