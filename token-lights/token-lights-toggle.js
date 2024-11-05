@@ -8,17 +8,17 @@
  * in this one the choice is made with a single button click.
  * Hopefully these changes make this version even easier to use.
  *
- * Additionally, all the configuration options have been gathered together 
- * at the top of the file. 
- * 
+ * Additionally, all the configuration options have been gathered together
+ * at the top of the file.
+ *
  * I owe a debt to the wizards at the Foundry Discord for the core ideas that I'm building on.
  *
  * Foundry v12+
- * Version 1.4
+ * Version 1.5
  */
 
 /**
- * Configure light colours 
+ * Configure light colours
  */
 const COLOR_FIRE = '#a88115'
 const COLOR_WHITE = '#ffffff'
@@ -26,17 +26,17 @@ const COLOR_MOON_GLOW = '#d4d4d4'
 
 /**
  * Configure light radius here. The default setting of 2 is for Dragonbane.
- * 
+ *
  * Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
  * Simply adjust to match the units per grid square in your game and the lighting settings should
  * work out.
- * 
+ *
  * Here's how the GAME_MULTIPLIER_PER_SQUARE values translate to light radii:
- * 
+ *
  * Value 2: bright light 10 grid squares, dim light 12 grid squares
  * Value 5: bright light 25 grid squares, dim light 30 grid squares
  * Value 6: bright light 30 grid squares, dim light 36 grid squares
- * 
+ *
  * Though I do apply a small fudge factor to the bright radius of torches,
  * to make them just a little less effective than lanterns.
  */
@@ -54,12 +54,12 @@ const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
  * This is a purely personal aesthetic choice. The older version of this Dragonbane lights macro
  * had a 'subtle torches' checkbox. Unchecking that used 'flame' for everything, which gives a
  * more exaggerated effect.
- * 
- * The first value is the name you can use to configure the animation type, 
- * the second value is the name you will see in the Foundry UI when configuring a light 
+ *
+ * The first value is the name you can use to configure the animation type,
+ * the second value is the name you will see in the Foundry UI when configuring a light
  * there.
- * 
- * This object is commented out because it's here for reference only, 
+ *
+ * This object is commented out because it's here for reference only,
  * it's not actually used in this macro.
  */
 /*
@@ -156,8 +156,8 @@ const LIGHTS = {
 
 /**
  * You don't need to configure anything below here.
- * 
- * I mean, you can, but it's not required to modify the 
+ *
+ * I mean, you can, but it's not required to modify the
  * lighting choices. That can be done entirely through
  * changing or adding colours and lights.
  */
@@ -194,8 +194,12 @@ for (let token of canvas.tokens.controlled) {
 
 // show the dialog so the user can choose a new light effect
 if (unlitTokens.length) {
+    const who =
+        unlitTokens.length === 1
+            ? unlitTokens[0].document.name
+            : `${unlitTokens.length} tokens`
     return foundry.applications.api.DialogV2.wait({
-        window: { title: 'Light Config' },
+        window: { title: `Set Lights: ${who}` },
         position: { width: 400 },
         rejectClose: false,
         render: (event, html) =>
