@@ -8,9 +8,10 @@
  * in this one the choice is made with a single button click.
  * Hopefully these changes make this version even easier to use.
  *
- * Additionally, all the configuration options have been gathered together into a single
- * object at the top of the file. I'm not enough of a wizard to think of all this myself.
- * I owe a debt to the wizards at the Foundry Discord for the core idea that I'm building on.
+ * Additionally, all the configuration options have been gathered together 
+ * at the top of the file. 
+ * 
+ * I owe a debt to the wizards at the Foundry Discord for the core ideas that I'm building on.
  *
  * Foundry v12+
  * Version 1.4
@@ -99,16 +100,14 @@ const LIGHTS = {
         bright: 0,
         angle: 360,
         luminosity: 0.5,
-        alpha: 0.4,
         animation: { type: 'none' },
     },
     Torch: {
         dim: DIM_LIGHT_RADIUS,
         bright: BRIGHT_LIGHT_RADIUS * 0.9, // torches have a bright radius just a little smaller than lanterns
-        color: COLOR_FIRE,
+        color: COLOR_FIRE, // The light colour
         angle: 360,
-        luminosity: 0.5,
-        alpha: 0.4,
+        luminosity: 0.5, // The colour intensity. 0 is washed out, and 1 is intense.
         animation: { type: 'torch', speed: 5, intensity: 2 },
     },
     'Flickering Torch': {
@@ -117,7 +116,7 @@ const LIGHTS = {
         color: COLOR_FIRE,
         angle: 360,
         luminosity: 0.5,
-        alpha: 0.4,
+        // Because 'flame' is a more intense animation effect, I reduce the animation speed
         animation: { type: 'flame', speed: 3, intensity: 2 },
     },
     // not a Dragonbane thing, but I love the effect so much!
@@ -127,7 +126,6 @@ const LIGHTS = {
         color: COLOR_FIRE,
         angle: 60,
         luminosity: 0.5,
-        alpha: 0.4,
         animation: { type: 'torch', speed: 3, intensity: 2 },
     },
     'Lantern / Oil Lamp': {
@@ -136,7 +134,6 @@ const LIGHTS = {
         color: COLOR_FIRE,
         angle: 360,
         luminosity: 0.5,
-        alpha: 0.4,
         animation: { type: 'torch', speed: 3, intensity: 2 },
     },
     'Tallow Candle': {
@@ -145,7 +142,6 @@ const LIGHTS = {
         color: COLOR_FIRE,
         angle: 360,
         luminosity: 0.5,
-        alpha: 0.4,
         animation: { type: 'flame', speed: 5, intensity: 4 },
     },
     'Light Trick': {
@@ -154,8 +150,7 @@ const LIGHTS = {
         color: COLOR_MOON_GLOW,
         angle: 360,
         luminosity: 0.5,
-        alpha: 0.3,
-        animation: { type: 'fog', speed: 3, intensity: 4 },
+        animation: { type: 'dome', speed: 3, intensity: 6 },
     },
 }
 
