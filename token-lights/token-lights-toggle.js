@@ -14,7 +14,7 @@
  * I owe a debt to the wizards at the Foundry Discord for the core ideas that I'm building on.
  *
  * Foundry v12+
- * Version 1.5
+ * Version 1.6
  */
 
 /**
@@ -95,6 +95,9 @@ const animations = {
  * This macro will explode if these names are not unique!
  */
 const LIGHTS = {
+    /**
+     * You probably don't want to modify this one. It's used to turn the lights out.
+     */
     noLight: {
         dim: 0,
         bright: 0,
@@ -102,7 +105,11 @@ const LIGHTS = {
         luminosity: 0.5,
         animation: { type: 'none' },
     },
-    Torch: {
+
+    /**
+     * The normal torch
+     */
+    'Torch': {
         dim: DIM_LIGHT_RADIUS,
         bright: BRIGHT_LIGHT_RADIUS * 0.9, // torches have a bright radius just a little smaller than lanterns
         color: COLOR_FIRE, // The light colour
@@ -110,6 +117,11 @@ const LIGHTS = {
         luminosity: 0.5, // The colour intensity. 0 is washed out, and 1 is intense.
         animation: { type: 'torch', speed: 5, intensity: 2 },
     },
+
+    /**
+     * The low-quality flickering torch
+     * The difference is mostly the 'flame' versus the 'torch' animation
+     */
     'Flickering Torch': {
         dim: DIM_LIGHT_RADIUS,
         bright: BRIGHT_LIGHT_RADIUS * 0.9, // torches have a bright radius just a little smaller than lanterns
@@ -119,15 +131,10 @@ const LIGHTS = {
         // Because 'flame' is a more intense animation effect, I reduce the animation speed
         animation: { type: 'flame', speed: 3, intensity: 2 },
     },
-    // not a Dragonbane thing, but I love the effect so much!
-    'Bullseye Lantern': {
-        dim: DIM_LIGHT_RADIUS * 1.4,
-        bright: BRIGHT_LIGHT_RADIUS * 1.2,
-        color: COLOR_FIRE,
-        angle: 60,
-        luminosity: 0.5,
-        animation: { type: 'torch', speed: 3, intensity: 2 },
-    },
+
+    /**
+     * While lanterns and oil lamps have different mechanics and prices, they cast the same light
+     */
     'Lantern / Oil Lamp': {
         dim: DIM_LIGHT_RADIUS,
         bright: BRIGHT_LIGHT_RADIUS,
@@ -136,6 +143,10 @@ const LIGHTS = {
         luminosity: 0.5,
         animation: { type: 'torch', speed: 3, intensity: 2 },
     },
+
+    /**
+     * Cheap, small radius, short burn time, flickers a lot
+     */
     'Tallow Candle': {
         dim: DIM_CANDLE_RADIUS,
         bright: BRIGHT_CANDLE_RADIUS,
@@ -144,7 +155,12 @@ const LIGHTS = {
         luminosity: 0.5,
         animation: { type: 'flame', speed: 5, intensity: 4 },
     },
-    'Light Trick': {
+
+    /**
+     * This is a good one for players to customise.
+     * What does their Light spell look like?
+     */
+    'Light Magic Trick': {
         dim: DIM_LIGHT_RADIUS,
         bright: BRIGHT_LIGHT_RADIUS,
         color: COLOR_MOON_GLOW,
@@ -152,7 +168,23 @@ const LIGHTS = {
         luminosity: 0.5,
         animation: { type: 'dome', speed: 3, intensity: 6 },
     },
+
+    /**
+     * Not a Dragonbane light, but I love the effect so much!
+     * You need to rotate the token to point the lantern.
+     * Just delete or comment out this section if you don't want this light type in your game.
+     */
+    'Bullseye Lantern': {
+        dim: DIM_LIGHT_RADIUS * 1.4,
+        bright: BRIGHT_LIGHT_RADIUS * 1.2,
+        color: COLOR_FIRE,
+        angle: 60,
+        luminosity: 0.5,
+        animation: { type: 'torch', speed: 3, intensity: 2 },
+    },
 }
+
+/************************************************************************/
 
 /**
  * You don't need to configure anything below here.
@@ -162,8 +194,10 @@ const LIGHTS = {
  * changing or adding colours and lights.
  */
 
-// Build a Set of all the lighting options that will be shown in the UI.
-// Helps ensure unique keys
+/**
+ * Build a Set of all the lighting options that will be shown in the UI.
+ * Helps ensure unique keys
+ */
 const states = new Set(Object.keys(LIGHTS))
 
 /**
