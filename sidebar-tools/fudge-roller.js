@@ -8,7 +8,7 @@ Version 1.0
 // Set this to the UUID of a table if you roll on a table a lot, 
 // or want to customise different copies of this macro for different tables
 // The UUID will be in the form RollTable.AUOdQK5u5tTlE3zN
-const DEFAULT_ROLL_TABLE = 'RollTable.AUOdQK5u5tTlE3zN'
+const DEFAULT_ROLL_TABLE = ''
 
 const { NumberField, DocumentUUIDField } = foundry.data.fields
 const { DialogV2 } = foundry.applications.api
