@@ -43,9 +43,7 @@ function getFateMessage (chosen) {
  display something. We never actually say which number belongs to a token, but it adds to the
  effect!
 */
-let roll = await new Roll(`1d${canvas.tokens.controlled.length}`).evaluate(
-    (options = { async: true })
-)
+let roll = await new Roll(`1d${canvas.tokens.controlled.length}`).evaluate()
 
 /* post the message as the person running the script, but with an alias. 
 This helps chat formatting work correctly, and avoids the default behavior 
@@ -53,7 +51,6 @@ of posting as the first selected token.
 */
 let chatData = {
     speaker: { actor: game.user.id, alias: 'The Dice Gods' },
-    type: CONST.CHAT_MESSAGE_TYPES.ROLL,
     rolls: [roll],
     content: getFateMessage(getRandomItem(canvas.tokens.controlled).name),
 }
