@@ -14,7 +14,7 @@
  * I owe a debt to the wizards at the Foundry Discord for the core ideas that I'm building on.
  *
  * Foundry v12+
- * Version 1.6
+ * Version 1.7
  */
 
 /**
@@ -25,11 +25,8 @@ const COLOR_WHITE = '#ffffff'
 const COLOR_MOON_GLOW = '#d4d4d4'
 
 /**
- * Configure light radius here. The default setting of 2 is for Dragonbane.
- *
- * Dragonbane uses 2 meters per grid square. For other games this will often be set to 5.
- * Simply adjust to match the units per grid square in your game and the lighting settings should
- * work out.
+ * Configure light radius here. The script reads the grid configuration from your scene,
+ * and falls back to the hard coded value if required.
  *
  * Here's how the GAME_MULTIPLIER_PER_SQUARE values translate to light radii:
  *
@@ -37,14 +34,14 @@ const COLOR_MOON_GLOW = '#d4d4d4'
  * Value 5: bright light 25 grid squares, dim light 30 grid squares
  * Value 6: bright light 30 grid squares, dim light 36 grid squares
  *
- * Though I do apply a small fudge factor to the bright radius of torches,
+ * I do apply a small fudge factor to the bright radius of torches,
  * to make them just a little less effective than lanterns.
  */
-const GAME_MULTIPLIER_PER_SQUARE = 2
+const GAME_MULTIPLIER_PER_SQUARE = canvas?.grid?.distance ?? 2
 
 // changing these will change everything quite a lot
-const BRIGHT_LIGHT_RADIUS = 4 * GAME_MULTIPLIER_PER_SQUARE
-const DIM_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
+const BRIGHT_LIGHT_RADIUS = 5 * GAME_MULTIPLIER_PER_SQUARE
+const DIM_LIGHT_RADIUS = 6 * GAME_MULTIPLIER_PER_SQUARE
 const BRIGHT_CANDLE_RADIUS = 1.5 * GAME_MULTIPLIER_PER_SQUARE
 const DIM_CANDLE_RADIUS = 2 * GAME_MULTIPLIER_PER_SQUARE
 
