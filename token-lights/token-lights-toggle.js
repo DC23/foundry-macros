@@ -15,6 +15,7 @@
  *
  * Foundry v12+
  * Version 1.8
+ * Dialog layout now works in Foundry v13
  */
 
 /**
@@ -231,10 +232,10 @@ if (unlitTokens.length) {
             : `${unlitTokens.length} tokens`
     return foundry.applications.api.DialogV2.wait({
         window: { title: `Set Lights: ${who}`, resizable: true, },
-        position: { width: 360, height: 164, },
+        position: { width: 220, height: 300, },
         rejectClose: false,
         render: (event, html) =>
-            html.querySelector('.form-footer'),
+            html.querySelector('.form-footer').classList.add('flexcol'),
         buttons: Array.from(states).map(k => {
             return {
                 label: k,
