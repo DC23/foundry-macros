@@ -15,18 +15,24 @@ Version 1.2
 */
 
 // I don't currently use this more than once, but I did earlier, and could again...
-function formatTravellerDate(day, year) {
+function formatTravellerDate (day, year) {
     return `${day.toString().padStart(3, '0')}-${year}`
 }
 
 const etTime = game.modules.get('jd-easytimekeeping').api.getTime() // Easy Timekeeping time
-const macro = game.macros.getName("calc-traveller-date")
-const tTime = await macro.execute({'time': etTime})                 // Traveller time
+const macro = game.macros.getName('calc-traveller-date')
+const tTime = await macro.execute({ time: etTime }) // Traveller time
 const timeFormatted = game.modules.get('jd-easytimekeeping').api.toTimeString()
 
-let chatContent = `${timeFormatted}, ${etTime.day.name} Week ${tTime.week}<br/><b>Date:</b> ${formatTravellerDate(tTime.day, tTime.year)}`
+let chatContent = `${timeFormatted}, ${etTime.day.name} Week ${
+    tTime.week
+}<br/><b>Date:</b> ${formatTravellerDate(tTime.day, tTime.year)}`
 let chatData = {
-    speaker: { actor:  canvas.tokens.controlled[0] ? canvas.tokens.controlled[0].actor : game.user.id },
+    speaker: {
+        actor: canvas.tokens.controlled[0]
+            ? canvas.tokens.controlled[0].actor
+            : game.user.id,
+    },
     content: chatContent,
 }
 
