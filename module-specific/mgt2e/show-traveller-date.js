@@ -11,31 +11,20 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.1
+Version 1.2
 */
 
-const YEAR_ZERO = 1105       // In-game year corresponding to Easy Timekeeping year zero
-const DAYS_PER_YEAR = 365    // Days per year
-
 // I don't currently use this more than once, but I did earlier, and could again...
-function toTravellerDate(day, year) {
+function formatTravellerDate(day, year) {
     return `${day.toString().padStart(3, '0')}-${year}`
 }
 
-// Test for pulling values from the MgT2e system settings
-//console.log("MgT2e Date: %s", toTravellerDate(game.settings.get('mgt2e', 'currentDay'), game.settings.get('mgt2e', 'currentYear')))
-
+const etTime = game.modules.get('jd-easytimekeeping').api.getTime() // Easy Timekeeping time
+const macro = game.macros.getName("calc-traveller-date")
+const tTime = await macro.execute({'time': etTime})                 // Traveller time
 const timeFormatted = game.modules.get('jd-easytimekeeping').api.toTimeString()
-const time = game.modules.get('jd-easytimekeeping').api.getTime()
-const year = Math.floor(time.days / DAYS_PER_YEAR) + YEAR_ZERO
-let day = time.days % DAYS_PER_YEAR
-let week = Math.floor(day / 7)
 
-// once the calculations are done, we can convert from 0-based to 1-based values for display
-week += 1
-day  += 1
-
-let chatContent = `${timeFormatted}, ${time.day.name} Week ${week}<br/><b>Date:</b> ${toTravellerDate(day, year)}`
+let chatContent = `${timeFormatted}, ${etTime.day.name} Week ${tTime.week}<br/><b>Date:</b> ${formatTravellerDate(tTime.day, tTime.year)}`
 let chatData = {
     speaker: { actor:  canvas.tokens.controlled[0] ? canvas.tokens.controlled[0].actor : game.user.id },
     content: chatContent,
