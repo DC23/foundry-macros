@@ -11,7 +11,7 @@ Requires:
  * Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.0
+Version 1.1
 */
 
 const YEAR_ZERO = 1105       // In-game year corresponding to Easy Timekeeping year zero
@@ -27,10 +27,14 @@ function toTravellerDate(day, year) {
 
 const timeFormatted = game.modules.get('jd-easytimekeeping').api.toTimeString()
 const time = game.modules.get('jd-easytimekeeping').api.getTime()
-const daysPlusOne = time.days + 1  // time.days is 0-based, so we add 1
-const year = Math.floor(daysPlusOne / DAYS_PER_YEAR) + YEAR_ZERO
-const day = daysPlusOne % DAYS_PER_YEAR
-const week = Math.floor(day / 7) + 1
+const year = Math.floor(time.days / DAYS_PER_YEAR) + YEAR_ZERO
+let day = time.days % DAYS_PER_YEAR
+let week = Math.floor(day / 7)
+
+// once the calculations are done, we can convert from 0-based to 1-based values for display
+week += 1
+day  += 1
+
 let chatContent = `${timeFormatted}, ${time.day.name} Week ${week}<br/><b>Date:</b> ${toTravellerDate(day, year)}`
 let chatData = {
     speaker: { actor:  canvas.tokens.controlled[0] ? canvas.tokens.controlled[0].actor : game.user.id },
