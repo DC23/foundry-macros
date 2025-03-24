@@ -15,21 +15,36 @@ const jumpDurationHours = await new Roll('6d6+148').evaluate()
 const jumpDurationMinutes = jumpDurationHours.total * 60
 const now = game.modules.get('jd-easytimekeeping').api.getTime()
 const jumpEndTime = now.totalMinutes + jumpDurationMinutes
-const jumpEnd = game.modules.get('jd-easytimekeeping').api.factorTime(jumpEndTime)
-const jumpDuration = game.modules.get('jd-easytimekeeping').api.factorTime(jumpDurationMinutes)
-const macro = game.macros.getName("calc-traveller-date")
-const jumpEndDate = await macro.execute({'time': jumpEnd})         
+const jumpEnd = game.modules
+    .get('jd-easytimekeeping')
+    .api.factorTime(jumpEndTime)
+const jumpDuration = game.modules
+    .get('jd-easytimekeeping')
+    .api.factorTime(jumpDurationMinutes)
+const macro = game.macros.getName('calc-traveller-date')
+const jumpEndDate = await macro.execute({ time: jumpEnd })
 
-function formatTravellerDate(day, year) {
+function formatTravellerDate (day, year) {
     return `${day.toString().padStart(3, '0')}-${year}`
 }
 
 // Set the end time of the jump to the global flag so it can be checked in the time change handler macro
 game.user.setFlag('world', 'ravens-call-current-jump-end', jumpEnd)
 
-let chatContent = `The jump is calculated to complete in ${jumpDuration.days} days, ${jumpDuration.hours} hours on <b>${formatTravellerDate(jumpEndDate.day, jumpEndDate.year)}</b> at <b>${jumpEnd.hours.toString().padStart(2, '0')}:${jumpEnd.minutes.toString().padStart(2, '0')}</b>`
+let chatContent = `The jump is calculated to complete in ${
+    jumpDuration.days
+} days, ${jumpDuration.hours} hours on <b>${formatTravellerDate(
+    jumpEndDate.day,
+    jumpEndDate.year
+)}</b> at <b>${jumpEnd.hours.toString().padStart(2, '0')}:${jumpEnd.minutes
+    .toString()
+    .padStart(2, '0')}</b>`
 let chatData = {
-    speaker: { actor:  canvas.tokens.controlled[0] ? canvas.tokens.controlled[0].actor : game.user.id },
+    speaker: {
+        actor: canvas.tokens.controlled[0]
+            ? canvas.tokens.controlled[0].actor
+            : game.user.id,
+    },
     content: chatContent,
 }
 
