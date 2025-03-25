@@ -6,7 +6,7 @@ Note that the flag used by the show-jump-progress
 macro and related functionality is not set.
 
 Foundry v12
-Version 1.4
+Version 1.5
 */
 
 function postChat (chatContent) {
@@ -26,6 +26,7 @@ function postChat (chatContent) {
 // First, don't allow starting a jump if one is already in progress
 if (game.user.getFlag('world', 'mgt2e-jump-end-time')) {
     postChat('A jump is already in progress!')
+    await game.macros.getName('show-jump-progress').execute()
     return false
 }
 

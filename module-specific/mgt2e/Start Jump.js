@@ -8,7 +8,7 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.10
+Version 1.11
 */
 
 function postChat (chatContent) {
@@ -28,6 +28,7 @@ function postChat (chatContent) {
 // First, don't allow starting a jump if one is already in progress
 if (game.user.getFlag('world', 'mgt2e-jump-end-time')) {
     postChat('A jump is already in progress!')
+    await game.macros.getName('show-jump-progress').execute()
     return false
 }
 
