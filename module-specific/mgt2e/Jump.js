@@ -6,8 +6,30 @@ Note that the flag used by the show-jump-progress
 macro and related functionality is not set.
 
 Foundry v12
-Version 1.3
+Version 1.4
 */
+
+function postChat (chatContent) {
+    const chatData = {
+        speaker: {
+            actor: canvas.tokens.controlled[0]
+                ? canvas.tokens.controlled[0].actor
+                : game.user.id,
+        },
+        content: chatContent,
+    }
+    ChatMessage.create(chatData)
+    ui.notifications.notify(chatContent)
+}
+
+
+// First, don't allow starting a jump if one is already in progress
+if (game.user.getFlag('world', 'mgt2e-jump-end-time')) {
+    postChat('A jump is already in progress!')
+    return false
+}
+
+
 let jumpDurationHours = await new Roll('6d6+148').evaluate()
 console.log('Jump hours', jumpDurationHours.total)
 
@@ -16,14 +38,4 @@ game.modules
     .api.increment({ hours: jumpDurationHours.total })
 
 const chatContent = `<b>Jump completed in ${jumpDurationHours.total} hours.</b>`
-const chatData = {
-    speaker: {
-        actor: canvas.tokens.controlled[0]
-            ? canvas.tokens.controlled[0].actor
-            : game.user.id,
-    },
-    content: chatContent,
-}
-
-ChatMessage.create(chatData)
-ui.notifications.notify(chatContent)
+postChat(chatContent)
