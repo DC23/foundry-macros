@@ -8,7 +8,18 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 0.0
+Version 1.2
 */
 
-// TODO
+async function wait (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+const jumpEnd = game.user.getFlag('world', 'ravens-call-current-jump-end')
+if (jumpEnd) {
+    game.modules.get('jd-easytimekeeping').api.set(jumpEnd)
+
+    // Wait 2 seconds for all the timekeeping updates, then post the new time to chat
+    await wait(2000)
+    await game.macros.getName('show-traveller-date').execute()
+}
