@@ -8,8 +8,28 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.9
+Version 1.10
 */
+
+function postChat (chatContent) {
+    const chatData = {
+        speaker: {
+            actor: canvas.tokens.controlled[0]
+                ? canvas.tokens.controlled[0].actor
+                : game.user.id,
+        },
+        content: chatContent,
+    }
+    ChatMessage.create(chatData)
+    ui.notifications.notify(chatContent)
+}
+
+
+// First, don't allow starting a jump if one is already in progress
+if (game.user.getFlag('world', 'mgt2e-jump-end-time')) {
+    postChat('A jump is already in progress!')
+    return false
+}
 
 const jumpDurationHours = await new Roll('6d6+148').evaluate()
 const jumpDurationMinutes = jumpDurationHours.total * 60
@@ -39,14 +59,5 @@ const chatContent = `Astrogation checks completed. The jump will take ${
 )}</b> at <b>${jumpEnd.hours.toString().padStart(2, '0')}:${jumpEnd.minutes
     .toString()
     .padStart(2, '0')}</b>`
-const chatData = {
-    speaker: {
-        actor: canvas.tokens.controlled[0]
-            ? canvas.tokens.controlled[0].actor
-            : game.user.id,
-    },
-    content: chatContent,
-}
-
-ChatMessage.create(chatData)
-ui.notifications.notify(chatContent)
+    
+postChat(chatContent)
