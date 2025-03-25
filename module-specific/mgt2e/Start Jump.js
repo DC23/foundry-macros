@@ -8,7 +8,7 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.8
+Version 1.9
 */
 
 const jumpDurationHours = await new Roll('6d6+148').evaluate()
@@ -31,7 +31,7 @@ function formatTravellerDate (day, year) {
 // Set the end time of the jump to the global flag so it can be checked in the time change handler macro
 game.user.setFlag('world', 'mgt2e-jump-end-time', jumpEnd)
 
-const chatContent = `The jump is calculated to complete in ${
+const chatContent = `Astrogation checks completed. The jump will take ${
     jumpDuration.days
 } days, ${jumpDuration.hours} hours on <b>${formatTravellerDate(
     jumpEndDate.day,
