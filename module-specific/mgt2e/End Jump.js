@@ -8,14 +8,14 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.2
+Version 1.3
 */
 
 async function wait (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-const jumpEnd = game.user.getFlag('world', 'ravens-call-current-jump-end')
+const jumpEnd = game.user.getFlag('world', 'mgt2e-jump-end-time')
 if (jumpEnd) {
     game.modules.get('jd-easytimekeeping').api.set(jumpEnd)
 

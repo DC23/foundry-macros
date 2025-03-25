@@ -9,7 +9,7 @@ Requires:
  - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.4
+Version 1.5
 */
 
 // If the day has changed, then make updates to the Traveller system day and year settings
@@ -17,7 +17,7 @@ if (time.days != oldTime.days) {
     //console.log("MgT2e Date: %s", toTravellerDate(game.settings.get('mgt2e', 'currentDay'), game.settings.get('mgt2e', 'currentYear')))
 }
 
-const jumpEndTime = game.user.getFlag('world', 'ravens-call-current-jump-end')
+const jumpEndTime = game.user.getFlag('world', 'mgt2e-jump-end-time')
 if (jumpEndTime) {
     /* only send an automatic Jump progress message if more than a day has elapsed 
        or if less than 1 day remains to the end of the jump

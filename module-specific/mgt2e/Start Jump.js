@@ -8,7 +8,7 @@ Requires:
     - Easy Timekeeping module v1.2.1+
 
 Foundry v12
-Version 1.7
+Version 1.8
 */
 
 const jumpDurationHours = await new Roll('6d6+148').evaluate()
@@ -29,7 +29,7 @@ function formatTravellerDate (day, year) {
 }
 
 // Set the end time of the jump to the global flag so it can be checked in the time change handler macro
-game.user.setFlag('world', 'ravens-call-current-jump-end', jumpEnd)
+game.user.setFlag('world', 'mgt2e-jump-end-time', jumpEnd)
 
 const chatContent = `The jump is calculated to complete in ${
     jumpDuration.days

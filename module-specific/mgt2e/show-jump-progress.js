@@ -3,7 +3,7 @@ If a jump is in progress, calculates the remaining jump time and posts it to cha
 If the jump is complete, it clears the jump.
 
 Foundry v12
-Version 1.1
+Version 1.2
 */
 
 function postChat (chatContent) {
@@ -19,7 +19,7 @@ function postChat (chatContent) {
     ui.notifications.notify(chatContent)
 }
 
-const jumpEndTime = game.user.getFlag('world', 'ravens-call-current-jump-end')
+const jumpEndTime = game.user.getFlag('world', 'mgt2e-jump-end-time')
 if (jumpEndTime) {
     const time =
         typeof scope.time == 'undefined'
@@ -42,7 +42,7 @@ if (jumpEndTime) {
     } else if (time.totalMinutes >= jumpEndTime.totalMinutes) {
         const message = `<b>Jump Completed!</b>`
         postChat(message)
-        game.user.unsetFlag('world', 'ravens-call-current-jump-end')
+        game.user.unsetFlag('world', 'mgt2e-jump-end-time')
     }
 } else {
     postChat('<b>No jump in progress!</b>')
