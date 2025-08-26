@@ -1,6 +1,9 @@
 # Roll All In Folder
 
-This Foundry macro calls all the rolltables in a folder once and formats the results into a chat message.
+- [roll-all-in-folder.js](./roll-all-in-folder.js)
+- [call-roll-all-sample.js](./call-roll-all-sample.js)
+
+These Foundry macros call all the rolltables in a folder once and formats the results into a chat message.
 
 Given a folder of results like this:
 
