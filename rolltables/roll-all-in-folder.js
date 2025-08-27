@@ -11,7 +11,7 @@ RPG tools such as the UNE NPC creator, the various Sine Nomine One-Roll tables a
 This macro is not intended to be modified or used directly. It should be called 
 from other macros, as follows:
 const macro = game.macros.getName('roll-all-in-folder')
-await macro.execute({ folderUuid: 'Folder.cyPH6EMn0DUlkdG8', recursive: false })
+await macro.execute({ folderUuid: 'Folder.cyPH6EMn0DUlkdG8', recursive: false, heading: true })
 
 where the value of folderUuid is the top-level folder containing the roll tables that will be 
 used to build the result.
@@ -19,7 +19,7 @@ used to build the result.
 If the recursive argument is true, then all roll tables in nested folders will be called.
 
 Foundry v13
-Version 1.1
+Version 1.5
 */
 
 console.assert(
@@ -47,14 +47,6 @@ const rollTables = recursive
       )
     : folder.contents.filter(e => e instanceof RollTable)
 
-async function draw (r) {
-    const result = await r.draw({ roll: true, displayChat: false })
-    message = message.concat(
-        `<br/><b>${r.name}:</b> ${result.results[0].description}`
-    )
-    console.log(message)
-}
-
 let results = []
 rollTables.forEach(r => {
     results.push(r.draw({ roll: true, displayChat: false }))
@@ -64,11 +56,16 @@ rollTables.forEach(r => {
 results = await Promise.all(results)
 
 // build the chat message
-let message = '' //`<h4>${folder.name}</h4>`
+let message =
+    typeof heading != 'undefined' && heading ? `<h5>${folder.name}</h5>` : ''
+
 results.forEach(r => {
-    message = message.concat(
-        `<b>${r.results[0].parent.name}:</b> ${r.results[0].description}<br/>`
-    )
+    const result = r.results[0]
+    const value =
+        result.name && result.description
+            ? result.name + ' ' + result.description
+            : result.description || result.name
+    message = message.concat(`<b>${result.parent.name}:</b> ${value}<br/>`)
 })
 
 // post the chat message
