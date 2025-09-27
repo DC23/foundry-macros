@@ -13,8 +13,8 @@
  *
  * I owe a debt to the wizards at the Foundry Discord for the core ideas that I'm building on.
  *
- * Foundry v12+
- * Version 1.8
+ * Foundry v13+
+ * Version 1.9
  * Dialog layout now works in Foundry v13
  */
 
@@ -234,8 +234,7 @@ if (unlitTokens.length) {
         window: { title: `Set Lights: ${who}`, resizable: true, },
         position: { width: 220, height: 300, },
         rejectClose: false,
-        render: (event, html) =>
-            html.querySelector('.form-footer').classList.add('flexcol'),
+        render: (event, html) => html.classList.add('flexcol'),
         buttons: Array.from(states).map(k => {
             return {
                 label: k,
